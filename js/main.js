@@ -1,4 +1,4 @@
-// Fastsatta.live Main UI Script with Fixed curYear/curMonth References
+// Fastsatta.live Main UI Script with Instant Search & Instant Record Chart Dropdown Filter
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
@@ -191,7 +191,7 @@ function formatMixChartCell(val, colorClass) {
   return `<span class="font-mono font-black ${colorClass} text-base sm:text-lg">${val}</span>`;
 }
 
-// Page 1: Homepage Renderer (With Fixed curYear/curMonth Declarations)
+// Page 1: Homepage Renderer
 function renderHomePage() {
   const cardsContainer = document.getElementById('today-cards-container');
   const summaryTableBody = document.getElementById('summary-table-body');
@@ -214,7 +214,7 @@ function renderHomePage() {
   const todayFormatted = getFormattedISTDateShort(todayDateObj);
   const yesterdayFormatted = getFormattedISTDateShort(yDateObj);
 
-  // 0. Update Chart Banner Headings Dynamically (e.g. OCTOBER 2026 -> NOVEMBER 2026)
+  // 0. Update Chart Banner Headings Dynamically
   const monthNamesUpper = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
   const currentMonthYearStr = `${monthNamesUpper[todayDateObj.getMonth()]} ${todayDateObj.getFullYear()}`;
 
@@ -289,7 +289,7 @@ function renderHomePage() {
     }).join('');
   }
 
-  // 3. Render Monthly Matrix Chart 1 (Morning & Afternoon Markets)
+  // 3. Render Monthly Matrix Chart 1
   if (monthlyMatrixContainer) {
     const matrix1 = window.dataEngine.getMonthlyMatrix(curYear, curMonth, ['disawar', 'haryana-king', 'ram-bazar', 'delhi-bazar', 'shree-ganesh']);
     monthlyMatrixContainer.innerHTML = matrix1.rows.map(r => `
@@ -304,7 +304,7 @@ function renderHomePage() {
     `).join('');
   }
 
-  // 4. Render Monthly Matrix Chart 2 (Evening & Night Markets)
+  // 4. Render Monthly Matrix Chart 2
   if (monthlyMatrixContainer2) {
     const matrix2 = window.dataEngine.getMonthlyMatrix(curYear, curMonth, ['faridabad', 'ambala-king', 'gaziyabad', 'himachal-night', 'gali']);
     monthlyMatrixContainer2.innerHTML = matrix2.rows.map(r => `
@@ -327,10 +327,10 @@ function renderTodayPage() {
   renderHomePage();
 }
 
-// Page 3: Record Chart Page (Robust Dynamic Market Title Matcher)
+// Page 3: Record Chart Page (Instant Dropdown Change & Render)
 function renderRecordChartPage() {
   const params = new URLSearchParams(window.location.search);
-  const slug = params.get('slug') || 'disawar';
+  let slug = params.get('slug') || 'disawar';
   const month = parseInt(params.get('month') || String(getISTDateObj().getMonth() + 1));
   const year = parseInt(params.get('year') || String(getISTDateObj().getFullYear()));
 
@@ -338,50 +338,57 @@ function renderRecordChartPage() {
   const tableBody = document.getElementById('chart-table-body');
   const title = document.getElementById('chart-title');
 
+  function updateChartView(selectedSlug) {
+    slug = selectedSlug;
+
+    if (title) {
+      let activeName = slug.replace('-', ' ').toUpperCase();
+      if (window.dataEngine) {
+        const active = window.dataEngine.getMarkets().find(m => m.slug.toLowerCase() === slug.toLowerCase());
+        if (active) activeName = active.name;
+      }
+      title.innerText = `${activeName} RECORD CHART ${year}`;
+    }
+
+    if (tableBody && window.dataEngine) {
+      const results = window.dataEngine.getResults()
+        .filter(r => r.slug.toLowerCase() === slug.toLowerCase())
+        .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
+
+      if (results.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center font-bold text-slate-500 py-6">No record chart data available for this market.</td></tr>`;
+      } else {
+        tableBody.innerHTML = results.map(r => `
+          <tr>
+            <td class="font-bold text-[11px] sm:text-xs text-red-800 text-left px-2 py-2 whitespace-nowrap">${formatDisplayDate(r.resultDate)}</td>
+            <td class="text-[11px] sm:text-xs text-slate-800 text-center px-1 py-2 whitespace-nowrap">${r.day < 10 ? '0' + r.day : r.day}</td>
+            <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700 px-1 py-2 whitespace-nowrap">${r.resultValue}</td>
+            <td class="text-right text-[10px] sm:text-xs px-2 py-2 whitespace-nowrap"><span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">${r.status || 'UPDATED'}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+  }
+
   if (select && window.dataEngine) {
     const markets = window.dataEngine.getMarkets();
     select.innerHTML = markets.map(m => `
       <option value="${m.slug}" ${m.slug.toLowerCase() === slug.toLowerCase() ? 'selected' : ''}>${m.name} (${m.resultTime})</option>
     `).join('');
 
-    select.addEventListener('change', (e) => {
-      window.location.href = `record-chart.html?slug=${e.target.value}&month=${month}&year=${year}`;
-    });
+    select.onchange = (e) => {
+      updateChartView(e.target.value);
+      try {
+        history.pushState(null, '', `record-chart.html?slug=${e.target.value}&month=${month}&year=${year}`);
+      } catch(e) {}
+    };
   }
 
-  // Robust Dynamic Market Record Chart Title Update
-  if (title) {
-    let activeName = slug.replace('-', ' ').toUpperCase();
-    if (window.dataEngine) {
-      const active = window.dataEngine.getMarkets().find(m => m.slug.toLowerCase() === slug.toLowerCase());
-      if (active) activeName = active.name;
-    }
-    title.innerText = `${activeName} RECORD CHART ${year}`;
-  }
-
-  if (tableBody && window.dataEngine) {
-    const results = window.dataEngine.getResults()
-      .filter(r => r.slug.toLowerCase() === slug.toLowerCase())
-      .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
-
-    if (results.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="4" class="text-center font-bold text-slate-500 py-6">No record chart data available for this market.</td></tr>`;
-    } else {
-      tableBody.innerHTML = results.map(r => `
-        <tr>
-          <td class="font-bold text-[11px] sm:text-xs text-red-800 text-left px-2 py-2 whitespace-nowrap">${formatDisplayDate(r.resultDate)}</td>
-          <td class="text-[11px] sm:text-xs text-slate-800 text-center px-1 py-2 whitespace-nowrap">${r.day < 10 ? '0' + r.day : r.day}</td>
-          <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700 px-1 py-2 whitespace-nowrap">${r.resultValue}</td>
-          <td class="text-right text-[10px] sm:text-xs px-2 py-2 whitespace-nowrap"><span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">${r.status || 'UPDATED'}</span></td>
-        </tr>
-      `).join('');
-    }
-  }
-
+  updateChartView(slug);
   syncSocialSettings();
 }
 
-// Page 4: All Results Search Page
+// Page 4: All Results Search Page (Instant Multi-Field Search Matcher)
 function renderResultsPage() {
   const container = document.getElementById('results-list-table-body');
   const input = document.getElementById('results-search-input');
@@ -389,12 +396,22 @@ function renderResultsPage() {
   const render = (query = '') => {
     let results = window.dataEngine.getResults().sort((a, b) => b.resultDate.localeCompare(a.resultDate));
     if (query) {
-      results = results.filter(r =>
-        r.marketName.toLowerCase().includes(query.toLowerCase()) ||
-        r.resultValue.includes(query) ||
-        r.resultDate.includes(query)
-      );
+      const qLower = query.toLowerCase().trim();
+      results = results.filter(r => {
+        const mName = (r.marketName || '').toLowerCase();
+        const slug = (r.slug || '').toLowerCase();
+        const val = (r.resultValue || '').toLowerCase();
+        const dateIso = (r.resultDate || '').toLowerCase();
+        const dateFmt = formatDisplayDate(r.resultDate || '').toLowerCase();
+
+        return mName.includes(qLower) ||
+               slug.includes(qLower) ||
+               val.includes(qLower) ||
+               dateIso.includes(qLower) ||
+               dateFmt.includes(qLower);
+      });
     }
+
     if (container) {
       if (results.length === 0) {
         container.innerHTML = `<tr><td colspan="6" class="text-center font-bold text-slate-500 py-6">No matching result records found.</td></tr>`;

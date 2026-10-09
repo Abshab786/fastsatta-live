@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Dual-Region Firebase Cloud Sync
+// Fastsatta.live - Market & Chart Data Engine with Complete Full Database Backup Import (10 Markets)
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -14,7 +14,7 @@ const DEFAULT_MARKETS = [
 ];
 
 const DEFAULT_SETTINGS = {
-  waLink: "https://api.whatsapp.com/send?phone=918090000000&text=%E0%A4%AE%E0%A5%81%E0%A4%9B%E0%A5%87%20%E0%A4%97%E0%A5%87%E0%A4%AE%20%E0%A4%AA%E0%A5%8D%E0%A4%B2%E0%A5%87%20%E0%A4%95%E0%A4%B0%E0%A4%A1%E0%A4%BE%20%E0%A4%B9%E0%A5%82%E0%A4%82",
+  waLink: "https://api.whatsapp.com/send?phone=918628963178&text=%E0%A4%AE%E0%A5%81%E0%A4%9B%E0%A5%87%20%E0%A4%97%E0%A5%87%E0%A4%AE%20%E0%A4%AA%E0%A5%8D%E0%A4%B2%E0%A5%87%20%E0%A4%95%E0%A4%B0%E0%A4%A1%E0%A4%BE%20%E0%A4%B9%E0%A5%82%E0%A4%82",
   tgLink: "https://t.me/",
   waEnabled: true,
   tgEnabled: true
@@ -22,13 +22,24 @@ const DEFAULT_SETTINGS = {
 
 const BACKUP_DATABASE = {
   "2026": {
+    "10": {
+      "01": { "AK": "63", "DB": "76", "FB": "42", "GL": "93", "GZ": "67", "HK": "85", "HN": "00", "RB": "17", "SG": "51", "DS": "XX" },
+      "02": { "AK": "10", "DB": "25", "DS": "52", "FB": "05", "GL": "01", "GZ": "81", "HK": "10", "HN": "09", "RB": "75", "SG": "31" },
+      "03": { "AK": "88", "DB": "25", "DS": "18", "FB": "58", "GL": "68", "GZ": "95", "HK": "80", "HN": "55", "RB": "56", "SG": "54" },
+      "04": { "AK": "77", "DB": "91", "DS": "15", "FB": "36", "GL": "80", "GZ": "98", "HK": "67", "HN": "35", "RB": "88", "SG": "46" },
+      "05": { "AK": "44", "DB": "86", "DS": "70", "FB": "26", "GL": "24", "GZ": "78", "HK": "58", "HN": "36", "RB": "21", "SG": "18" },
+      "06": { "AK": "98", "DB": "29", "DS": "59", "FB": "01", "GL": "53", "GZ": "38", "HK": "94", "HN": "44", "RB": "59", "SG": "27" },
+      "07": { "AK": "96", "DB": "06", "DS": "23", "FB": "87", "GL": "29", "GZ": "84", "HK": "43", "HN": "21", "RB": "55", "SG": "89" },
+      "08": { "AK": "12", "DB": "07", "DS": "90", "FB": "92", "GL": "62", "GZ": "74", "HK": "00", "HN": "27", "RB": "13", "SG": "02" },
+      "09": { "AK": "12", "DB": "07", "DS": "26", "FB": "92", "GL": "62", "GZ": "74", "HK": "96", "HN": "27", "RB": "13", "SG": "02" }
+    },
     "09": {
       "01": { "DB": "58", "SG": "89", "FB": "45", "GZ": "86", "GL": "81", "DS": "XX" },
       "02": { "DB": "52", "SG": "54", "FB": "19", "GZ": "85", "GL": "96", "DS": "69" },
       "03": { "DB": "88", "SG": "20", "FB": "08", "GZ": "32", "GL": "77", "DS": "57" },
       "04": { "DB": "18", "SG": "01", "FB": "02", "GZ": "95", "GL": "26", "DS": "95" },
       "05": { "DB": "44", "SG": "02", "FB": "30", "GZ": "68", "GL": "37", "DS": "59" },
-      "06": { "DB": "25", "SG": "XX", "FB": "88", "GZ": "69", "GL": "94", "DS": "78" },
+      "06": { "DB": "71", "SG": "25", "FB": "88", "GZ": "69", "GL": "94", "DS": "78" },
       "07": { "DB": "61", "SG": "17", "FB": "02", "GZ": "02", "GL": "10", "DS": "67" },
       "08": { "DB": "84", "SG": "83", "FB": "71", "GZ": "93", "GL": "64", "DS": "92" },
       "09": { "DB": "18", "SG": "15", "FB": "29", "GZ": "93", "GL": "69", "DS": "54" },
@@ -39,15 +50,25 @@ const BACKUP_DATABASE = {
       "14": { "DB": "86", "SG": "34", "FB": "30", "GZ": "50", "GL": "87", "DS": "35" },
       "15": { "DB": "46", "SG": "28", "FB": "24", "GZ": "19", "GL": "83", "DS": "89" },
       "16": { "DB": "68", "SG": "94", "FB": "21", "GZ": "42", "GL": "91", "DS": "31" },
-      "17": { "DB": "25", "SG": "37", "FB": "16", "GZ": "85", "GL": "69", "DS": "90" },
+      "17": { "DB": "99", "SG": "50", "FB": "38", "GZ": "34", "GL": "73", "DS": "90" },
       "18": { "DB": "84", "SG": "38", "FB": "36", "GZ": "03", "GL": "50", "DS": "49" },
       "19": { "DB": "24", "SG": "20", "FB": "21", "GZ": "86", "GL": "07", "DS": "35" },
       "20": { "DB": "47", "SG": "80", "FB": "84", "GZ": "24", "GL": "66", "DS": "32" },
-      "21": { "DB": "62", "SG": "08", "FB": "71", "GZ": "70", "GL": "XX", "DS": "01" }
+      "21": { "AK": "94", "DB": "62", "DS": "01", "FB": "71", "GL": "32", "GZ": "70", "HK": "27", "HN": "08", "RB": "87", "SG": "08" },
+      "22": { "AK": "94", "DB": "03", "DS": "73", "FB": "42", "GL": "00", "GZ": "50", "HK": "01", "HN": "11", "RB": "98", "SG": "98" },
+      "23": { "AK": "69", "DB": "92", "DS": "35", "FB": "00", "GL": "02", "GZ": "42", "HK": "10", "HN": "15", "RB": "29", "SG": "10" },
+      "24": { "AK": "16", "DB": "27", "DS": "26", "FB": "38", "GL": "90", "GZ": "32", "HK": "71", "HN": "77", "RB": "56", "SG": "48" },
+      "25": { "AK": "63", "DB": "44", "DS": "86", "FB": "08", "GL": "37", "GZ": "63", "HK": "20", "HN": "91", "RB": "78", "SG": "68" },
+      "26": { "AK": "43", "DB": "55", "DS": "48", "FB": "09", "GL": "66", "GZ": "18", "HK": "67", "HN": "19", "RB": "66", "SG": "43" },
+      "27": { "AK": "82", "DB": "35", "DS": "81", "FB": "61", "GL": "64", "GZ": "66", "HK": "64", "HN": "27", "RB": "16", "SG": "07" },
+      "28": { "AK": "77", "DB": "66", "DS": "49", "FB": "58", "GL": "03", "GZ": "03", "HK": "59", "HN": "40", "RB": "00", "SG": "90" },
+      "29": { "AK": "15", "DB": "51", "DS": "43", "FB": "90", "GL": "66", "GZ": "20", "HK": "88", "HN": "76", "RB": "98", "SG": "61" },
+      "30": { "AK": "XX", "DB": "XX", "DS": "25", "FB": "XX", "GL": "XX", "GZ": "XX", "HK": "XX", "HN": "XX", "RB": "XX", "SG": "XX" }
     }
   }
 };
 
+// ⏰ Reliable IST Date Helpers (UTC+05:30)
 function getISTDateObj() {
   const now = new Date();
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -67,48 +88,6 @@ function generateFullDemoResults() {
   const results = [];
   let idCount = 1;
 
-  for (let d = 8; d >= 1; d--) {
-    const dayStr = String(d).padStart(2, '0');
-    const dateStr = `2026-10-${dayStr}`;
-
-    DEFAULT_MARKETS.forEach((m) => {
-      const seed = (m.timeMinutes * 19 + d * 23) % 100;
-      const valStr = String(seed).padStart(2, '0');
-      const isToday = d === 8;
-
-      let status = 'UPDATED';
-      let isSecret = false;
-      if (isToday) {
-        if (m.slug === 'gaziyabad' || m.slug === 'himachal-night') {
-          status = 'LIVE';
-        } else if (m.slug === 'gali') {
-          status = 'PENDING';
-          isSecret = true;
-        }
-      }
-
-      results.push({
-        id: `res-${m.id}-${dateStr}`,
-        marketId: m.id,
-        marketName: m.name,
-        slug: m.slug,
-        resultValue: isToday && status === 'PENDING' ? 'XX' : valStr,
-        yesterdayValue: String((seed + 37) % 100).padStart(2, '0'),
-        patti: `${120 + seed}-${valStr}-${340 + seed}`,
-        resultDate: dateStr,
-        resultTime: m.resultTime,
-        status: status,
-        isSecret: isSecret,
-        showInstantly: !isSecret,
-        year: 2026,
-        month: 10,
-        day: d,
-        updatedAt: `${dateStr}T12:00:00.000Z`
-      });
-    });
-  }
-
-  const sepData = BACKUP_DATABASE["2026"]["09"];
   const marketCodeMap = {
     'DS': 'disawar',
     'HK': 'haryana-king',
@@ -122,38 +101,43 @@ function generateFullDemoResults() {
     'GL': 'gali'
   };
 
-  for (let d = 30; d >= 1; d--) {
-    const dayStr = String(d).padStart(2, '0');
-    const dateStr = `2026-09-${dayStr}`;
-    const dayMap = sepData[dayStr] || {};
+  // Process imported Backup Database Months
+  const year2026 = BACKUP_DATABASE["2026"];
+  for (const monthKey in year2026) {
+    const monthNum = parseInt(monthKey);
+    const monthData = year2026[monthKey];
 
-    DEFAULT_MARKETS.forEach(m => {
-      let code = Object.keys(marketCodeMap).find(k => marketCodeMap[k] === m.slug);
-      let val = (code && dayMap[code]) ? dayMap[code] : '';
-      if (!val || val === '') {
-        const seed = (m.timeMinutes * 11 + d * 17) % 100;
-        val = String(seed).padStart(2, '0');
-      }
+    for (const dayKey in monthData) {
+      const dayNum = parseInt(dayKey);
+      const dayStr = String(dayNum).padStart(2, '0');
+      const dateStr = `2026-${monthKey}-${dayStr}`;
+      const dayMap = monthData[dayKey];
 
-      results.push({
-        id: `res-${m.id}-${dateStr}`,
-        marketId: m.id,
-        marketName: m.name,
-        slug: m.slug,
-        resultValue: val,
-        yesterdayValue: 'XX',
-        patti: `${110 + (d * 3) % 90}-${val}-${320 + (d * 5) % 90}`,
-        resultDate: dateStr,
-        resultTime: m.resultTime,
-        status: 'UPDATED',
-        isSecret: false,
-        showInstantly: true,
-        year: 2026,
-        month: 9,
-        day: d,
-        updatedAt: `${dateStr}T12:00:00.000Z`
+      DEFAULT_MARKETS.forEach(m => {
+        let code = Object.keys(marketCodeMap).find(k => marketCodeMap[k] === m.slug);
+        let val = (code && dayMap[code]) ? dayMap[code] : '';
+        if (!val || val === '') val = 'XX';
+
+        results.push({
+          id: `res-${m.id}-${dateStr}`,
+          marketId: m.id,
+          marketName: m.name,
+          slug: m.slug,
+          resultValue: val,
+          yesterdayValue: 'XX',
+          patti: `${120 + dayNum}-${val}-${340 + dayNum}`,
+          resultDate: dateStr,
+          resultTime: m.resultTime,
+          status: val === 'XX' ? 'PENDING' : 'UPDATED',
+          isSecret: val === 'XX',
+          showInstantly: val !== 'XX',
+          year: 2026,
+          month: monthNum,
+          day: dayNum,
+          updatedAt: `${dateStr}T12:00:00.000Z`
+        });
       });
-    });
+    }
   }
 
   return results;
@@ -167,9 +151,8 @@ class DataEngine {
 
   init() {
     localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
-    if (!localStorage.getItem('fastsatta_results')) {
-      localStorage.setItem('fastsatta_results', JSON.stringify(generateFullDemoResults()));
-    }
+    // Always sync full imported dataset
+    localStorage.setItem('fastsatta_results', JSON.stringify(generateFullDemoResults()));
     if (!localStorage.getItem('fastsatta_settings')) {
       localStorage.setItem('fastsatta_settings', JSON.stringify(DEFAULT_SETTINGS));
     }
@@ -463,12 +446,12 @@ class DataEngine {
 
     this.saveResults(results);
 
-    // Write to Firebase Realtime Database
+    // Sync to Firebase Database Cloud with Explicit Error Feedback
     if (this.db) {
       this.db.ref(`fastsatta/results/${record.id}`).set(record, (error) => {
         if (error) {
           console.error("❌ Firebase Write Error:", error.message);
-          alert(`⚠️ FIREBASE CONNECTION NOTICE:\n\nFirebase Cloud write error: "${error.message}"\n\nPlease check Firebase Console -> Realtime Database -> Rules: { "rules": { ".read": true, ".write": true } }`);
+          alert(`⚠️ FIREBASE PERMISSION NOTICE:\n\nFirebase Cloud write failed with error: "${error.message}".\n\nPlease go to Firebase Console -> Realtime Database -> Rules and set:\n\n{ "rules": { ".read": true, ".write": true } }`);
         } else {
           console.log("✅ Firebase Cloud Sync Successful!");
         }

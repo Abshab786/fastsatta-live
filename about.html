@@ -24,7 +24,7 @@
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=4.0">
 
   <script type="application/ld+json">
   {
@@ -75,7 +75,21 @@
           <a href="history.html" class="satta-nav-link">History</a>
           <a href="about.html" class="satta-nav-link active">About Us</a>
         </div>
+
+        <button id="mobile-menu-btn" class="sm:hidden p-2 text-yellow-300" aria-label="Toggle Navigation">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
       </div>
+    </div>
+
+    <!-- Mobile Menu Drawer -->
+    <div id="mobile-menu" class="hidden sm:hidden bg-slate-950 px-4 py-3 border-t border-slate-800 space-y-2 text-xs font-black uppercase">
+      <a href="index.html" class="block px-3 py-2 rounded text-white hover:bg-slate-800">Home</a>
+      <a href="today.html" class="block px-3 py-2 rounded text-white hover:bg-slate-800">Today Results</a>
+      <a href="results.html" class="block px-3 py-2 rounded text-white hover:bg-slate-800">All Results</a>
+      <a href="record-chart.html" class="block px-3 py-2 rounded text-white hover:bg-slate-800">Record Chart</a>
+      <a href="history.html" class="block px-3 py-2 rounded text-white hover:bg-slate-800">History</a>
+      <a href="about.html" class="block px-3 py-2 rounded bg-amber-400 text-black">About Us</a>
     </div>
   </nav>
 
@@ -99,7 +113,13 @@
     </div>
   </footer>
 
-  <script src="js/data.js"></script>
-  <script src="js/main.js"></script>
+  <!-- Firebase Web SDK Compat Scripts for Realtime Cloud Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+  <script src="js/firebase-config.js?v=4.0"></script>
+
+  <script src="js/data.js?v=4.0"></script>
+  <script src="js/main.js?v=4.0"></script>
 </body>
 </html>

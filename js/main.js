@@ -1,4 +1,4 @@
-// Fastsatta.live Main UI Script with Real-Time 30-Min Dynamic Floating Carousel Badges
+// Fastsatta.live Main UI Script with Compact DD-MM-YY Date Format for Mobile
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHomePage();
   }
 
-  // Auto-refresh dynamic sorting every 10 seconds for real-time carousel rotation
+  // Auto-refresh dynamic sorting every 10 seconds
   setInterval(() => {
     const curPath = window.location.pathname.toLowerCase();
     if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
@@ -50,6 +50,19 @@ window.addEventListener('storage', (e) => {
     }
   }
 });
+
+// Helper to format date string "YYYY-MM-DD" -> "DD-MM-YY" (e.g., "2026-10-09" -> "09-10-26")
+function formatDisplayDate(dateStr) {
+  if (!dateStr || dateStr.length < 10) return dateStr;
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const yearShort = parts[0].slice(2); // "2026" -> "26"
+    const month = parts[1]; // "10"
+    const day = parts[2]; // "09"
+    return `${day}-${month}-${yearShort}`; // "09-10-26"
+  }
+  return dateStr;
+}
 
 function syncSocialSettings() {
   if (!window.dataEngine) return;
@@ -176,7 +189,7 @@ function formatMixChartCell(val, colorClass) {
   return `<span class="font-mono font-black ${colorClass} text-base sm:text-lg">${val}</span>`;
 }
 
-// Page 1: Homepage Renderer with Real-Time 30-Min Dynamic Carousel Badges
+// Page 1: Homepage Renderer
 function renderHomePage() {
   const cardsContainer = document.getElementById('today-cards-container');
   const summaryTableBody = document.getElementById('summary-table-body');
@@ -197,16 +210,15 @@ function renderHomePage() {
   const todayFormatted = getFormattedISTDateShort(todayDateObj);
   const yesterdayFormatted = getFormattedISTDateShort(yDateObj);
 
-  // 1. Render Result Cards Dashboard (Dynamic Floating Carousel Order)
+  // 1. Render Result Cards Dashboard
   if (cardsContainer) {
     cardsContainer.innerHTML = todaySummary.map(item => {
       const isPending = item.todayValue === 'XX' || item.status === 'PENDING';
-      const isSecret = item.isSecret;
 
       let badgeHTML = '';
       if (item.badge === 'NEXT ⏳' || item.isNextUpcoming) {
         badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEXT ⏳</span>`;
-      } else if (item.badge === 'NEW ⚡' || item.isFreshNew || item.status === 'LIVE') {
+      } else if (item.badge === 'NEW ⚡' || item.isFreshNew) {
         badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEW ⚡</span>`;
       }
 
@@ -228,11 +240,7 @@ function renderHomePage() {
 
             <div class="text-center border-l-2 border-slate-300 pl-4 sm:pl-6">
               <span class="text-[10px] sm:text-[11px] font-black uppercase text-emerald-800 block">TODAY <span class="text-emerald-700 font-extrabold">(${todayFormatted})</span></span>
-              ${
-                isSecret
-                  ? `<span class="blinking-wait text-xs block mt-1">WAIT... ⏳ XX</span>`
-                  : `<span class="${isPending ? 'text-slate-400 font-mono text-2xl sm:text-3xl font-black block mt-0.5' : 'result-val-today block mt-0.5'}">${item.todayValue}</span>`
-              }
+              <span class="${isPending ? 'text-slate-400 font-mono text-3xl font-black block mt-0.5' : 'result-val-today block mt-0.5'}">${item.todayValue}</span>
             </div>
           </div>
         </div>
@@ -244,7 +252,6 @@ function renderHomePage() {
   if (summaryTableBody) {
     summaryTableBody.innerHTML = todaySummary.map(item => {
       const isPending = item.todayValue === 'XX' || item.status === 'PENDING';
-      const isSecret = item.isSecret;
 
       return `
         <tr class="transition-all duration-300">
@@ -255,11 +262,7 @@ function renderHomePage() {
             ${item.yesterdayValue}
           </td>
           <td class="text-center font-mono font-black text-xs sm:text-2xl px-0.5 sm:px-3 py-2.5 sm:py-3 whitespace-nowrap">
-            ${
-              isSecret
-                ? `<div class="blinking-wait text-[9px] sm:text-xs">WAIT... ⏳ XX</div>`
-                : `<div class="${isPending ? 'text-slate-400' : 'text-emerald-700'}">${item.todayValue}</div>`
-            }
+            <div class="${isPending ? 'text-slate-400 font-bold' : 'text-emerald-700 font-black'}">${item.todayValue}</div>
           </td>
           <td class="text-center text-slate-800 text-xs font-black hidden sm:table-cell px-2 sm:px-4 py-3 whitespace-nowrap">${item.resultTime}</td>
           <td class="text-right hidden sm:table-cell px-2 sm:px-4 py-3 whitespace-nowrap">
@@ -313,7 +316,7 @@ function renderTodayPage() {
   renderHomePage();
 }
 
-// Page 3: Record Chart Page
+// Page 3: Record Chart Page (Compact DD-MM-YY Date Format)
 function renderRecordChartPage() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug') || 'disawar';
@@ -350,10 +353,10 @@ function renderRecordChartPage() {
     } else {
       tableBody.innerHTML = results.map(r => `
         <tr>
-          <td class="font-bold text-xs text-red-800 text-center">${r.resultDate}</td>
-          <td class="text-xs text-slate-800 text-center">Day ${r.day || r.resultDate.split('-')[2]}</td>
-          <td class="text-center font-mono font-black text-2xl text-emerald-700">${r.resultValue}</td>
-          <td class="text-right text-xs"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">${r.status || 'UPDATED'}</span></td>
+          <td class="font-bold text-[11px] sm:text-xs text-red-800 text-left px-2 py-2 whitespace-nowrap">${formatDisplayDate(r.resultDate)}</td>
+          <td class="text-[11px] sm:text-xs text-slate-800 text-center px-1 py-2 whitespace-nowrap">${r.day < 10 ? '0' + r.day : r.day}</td>
+          <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700 px-1 py-2 whitespace-nowrap">${r.resultValue}</td>
+          <td class="text-right text-[10px] sm:text-xs px-2 py-2 whitespace-nowrap"><span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">${r.status || 'UPDATED'}</span></td>
         </tr>
       `).join('');
     }
@@ -362,7 +365,7 @@ function renderRecordChartPage() {
   syncSocialSettings();
 }
 
-// Page 4: All Results Search Page
+// Page 4: All Results Search Page (Compact DD-MM-YY Date Format)
 function renderResultsPage() {
   const container = document.getElementById('results-list-table-body');
   const input = document.getElementById('results-search-input');
@@ -384,7 +387,7 @@ function renderResultsPage() {
           <tr>
             <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base">${r.marketName}</td>
             <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700">${r.resultValue}</td>
-            <td class="text-center text-slate-800 text-xs font-bold">${r.resultDate}</td>
+            <td class="text-center text-slate-800 text-xs font-bold">${formatDisplayDate(r.resultDate)}</td>
             <td class="text-center text-slate-800 text-xs font-bold">${r.resultTime}</td>
             <td class="text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
             <td class="text-right"><a href="result-detail.html?slug=${r.slug}" class="chart-button-yellow text-xs inline-block px-2.5 py-1">Details &rarr;</a></td>
@@ -404,7 +407,7 @@ function renderHistoryPage() {
   renderResultsPage();
 }
 
-// Page 6: Market Specific Detail Page
+// Page 6: Market Specific Detail Page (Compact DD-MM-YY Date Format)
 function renderMarketDetailPage() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug') || 'disawar';
@@ -434,7 +437,7 @@ function renderMarketDetailPage() {
           <tr>
             <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base">${r.marketName}</td>
             <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700">${r.resultValue}</td>
-            <td class="text-center text-slate-800 text-xs font-bold">${r.resultDate}</td>
+            <td class="text-center text-slate-800 text-xs font-bold">${formatDisplayDate(r.resultDate)}</td>
             <td class="text-center text-slate-800 text-xs font-bold">${r.resultTime}</td>
             <td class="text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
             <td class="text-right"><a href="record-chart.html?slug=${r.slug}" class="chart-button-yellow text-xs inline-block px-2.5 py-1">Chart &rarr;</a></td>

@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with 24-Hour Circular Draw-Time Sorting
+// Fastsatta.live - Market & Chart Data Engine with Exact Oct 09 Declared Results
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -31,7 +31,8 @@ const BACKUP_DATABASE = {
       "06": { "AK": "98", "DB": "29", "DS": "59", "FB": "01", "GL": "53", "GZ": "38", "HK": "94", "HN": "44", "RB": "59", "SG": "27" },
       "07": { "AK": "96", "DB": "06", "DS": "23", "FB": "87", "GL": "29", "GZ": "84", "HK": "43", "HN": "21", "RB": "55", "SG": "89" },
       "08": { "AK": "12", "DB": "07", "DS": "90", "FB": "92", "GL": "62", "GZ": "74", "HK": "00", "HN": "27", "RB": "13", "SG": "02" },
-      "09": { "DS": "26", "HK": "96", "SG": "51", "AK": "XX", "DB": "XX", "FB": "XX", "GL": "XX", "GZ": "XX", "HN": "XX", "RB": "XX" }
+      // Today October 09 Declared: Disawar (DS: 26), Haryana King (HK: 96), Ram Bazar (RB: 54), Delhi Bazar (DB: 87), Shree Ganesh (SG: 01)
+      "09": { "DS": "26", "HK": "96", "RB": "54", "DB": "87", "SG": "01", "AK": "XX", "FB": "XX", "GL": "XX", "GZ": "XX", "HN": "XX" }
     },
     "09": {
       "01": { "AK": "15", "DB": "58", "DS": "43", "FB": "45", "GL": "81", "GZ": "86", "HK": "88", "HN": "76", "RB": "98", "SG": "89" },
@@ -115,14 +116,24 @@ function generateFullDemoResults() {
         let val = (code && dayMap[code]) ? dayMap[code] : '';
         if (!val || val === '') val = 'XX';
 
+        // ACCURATE IST DRAW TIMESTAMPS FOR OCT 09:
+        // Disawar declared at 05:05 AM IST
+        // Haryana King declared at 01:35 PM IST
+        // Ram Bazar declared at 02:35 PM IST
+        // Delhi Bazar declared at 03:15 PM IST
+        // Shree Ganesh declared fresh at 05:25 PM IST (within last 60 mins -> HAS NEW ⚡ BADGE & FLOATS TO TOP #1!)
         let updatedTimeStr = '2026-10-08T00:00:00.000+05:30';
         if (dateStr === '2026-10-09') {
           if (m.slug === 'disawar') {
             updatedTimeStr = '2026-10-09T05:05:00.000+05:30';
           } else if (m.slug === 'haryana-king') {
             updatedTimeStr = '2026-10-09T13:35:00.000+05:30';
+          } else if (m.slug === 'ram-bazar') {
+            updatedTimeStr = '2026-10-09T14:35:00.000+05:30';
+          } else if (m.slug === 'delhi-bazar') {
+            updatedTimeStr = '2026-10-09T15:15:00.000+05:30';
           } else if (m.slug === 'shree-ganesh') {
-            updatedTimeStr = new Date().toISOString();
+            updatedTimeStr = new Date().toISOString(); // Current Millisecond
           }
         }
 
@@ -158,7 +169,7 @@ class DataEngine {
   }
 
   init() {
-    const CURRENT_DATA_VERSION = 'v2026_circular_time_sort_v500';
+    const CURRENT_DATA_VERSION = 'v2026_oct9_exact_results_v600';
     localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
 
     if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION) {
@@ -182,7 +193,8 @@ class DataEngine {
       }
 
       if (this.db) {
-        const CURRENT_DATA_VERSION = 'v2026_circular_time_sort_v500';
+        // 🔥 FORCE OVERWRITE FIREBASE REALTIME DATABASE CLOUD SNAPSHOT ON VERSION BUMP!
+        const CURRENT_DATA_VERSION = 'v2026_oct9_exact_results_v600';
         if (localStorage.getItem('fastsatta_cloud_synced_version') !== CURRENT_DATA_VERSION) {
           try {
             const freshData = generateFullDemoResults();

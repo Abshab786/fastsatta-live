@@ -1,4 +1,4 @@
-// Fastsatta.live Main UI Script & IST Dynamic Satta Engine with Multi-Tab Instant Sync
+// Fastsatta.live Main UI Script with Real-Time 30-Min Dynamic Floating Carousel Badges
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHomePage();
   }
 
-  // Auto-refresh dynamic sorting every 5 seconds for homepage and today page
+  // Auto-refresh dynamic sorting every 10 seconds for real-time carousel rotation
   setInterval(() => {
     const curPath = window.location.pathname.toLowerCase();
     if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (curPath.endsWith('today.html')) {
       renderTodayPage();
     }
-  }, 5000);
+  }, 10000);
 });
 
 // ⚡ Multi-Tab Instant LocalStorage Sync
@@ -165,7 +165,7 @@ function startLiveTimestampClock() {
   setInterval(updateClock, 1000);
 }
 
-// Helper to format Mix Chart cell values (Light grey for unreleased XX)
+// Helper to format Mix Chart cell values
 function formatMixChartCell(val, colorClass) {
   if (val === '---') {
     return `<span class="text-xs text-red-600 font-bold">---</span>`;
@@ -176,7 +176,7 @@ function formatMixChartCell(val, colorClass) {
   return `<span class="font-mono font-black ${colorClass} text-base sm:text-lg">${val}</span>`;
 }
 
-// Page 1: Homepage Renderer
+// Page 1: Homepage Renderer with Real-Time 30-Min Dynamic Carousel Badges
 function renderHomePage() {
   const cardsContainer = document.getElementById('today-cards-container');
   const summaryTableBody = document.getElementById('summary-table-body');
@@ -197,16 +197,17 @@ function renderHomePage() {
   const todayFormatted = getFormattedISTDateShort(todayDateObj);
   const yesterdayFormatted = getFormattedISTDateShort(yDateObj);
 
-  // 1. Render Result Cards Dashboard
+  // 1. Render Result Cards Dashboard (Dynamic Floating Carousel Order)
   if (cardsContainer) {
     cardsContainer.innerHTML = todaySummary.map(item => {
       const isPending = item.todayValue === 'XX' || item.status === 'PENDING';
       const isSecret = item.isSecret;
-      const isLive = item.status === 'LIVE' || item.badge === 'LIVE ⚡';
 
       let badgeHTML = '';
-      if (isLive) {
-        badgeHTML = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white animate-pulse whitespace-nowrap shrink-0">LIVE NOW ⚡</span>`;
+      if (item.badge === 'NEXT ⏳' || item.isNextUpcoming) {
+        badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEXT ⏳</span>`;
+      } else if (item.badge === 'NEW ⚡' || item.isFreshNew || item.status === 'LIVE') {
+        badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEW ⚡</span>`;
       }
 
       return `
@@ -340,7 +341,9 @@ function renderRecordChartPage() {
   }
 
   if (tableBody && window.dataEngine) {
-    const results = window.dataEngine.getResults().filter(r => r.slug === slug);
+    const results = window.dataEngine.getResults()
+      .filter(r => r.slug === slug)
+      .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
 
     if (results.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="4" class="text-center font-bold text-slate-500 py-6">No record chart data available for this market.</td></tr>`;
@@ -365,7 +368,7 @@ function renderResultsPage() {
   const input = document.getElementById('results-search-input');
 
   const render = (query = '') => {
-    let results = window.dataEngine.getResults();
+    let results = window.dataEngine.getResults().sort((a, b) => b.resultDate.localeCompare(a.resultDate));
     if (query) {
       results = results.filter(r =>
         r.marketName.toLowerCase().includes(query.toLowerCase()) ||
@@ -377,7 +380,7 @@ function renderResultsPage() {
       if (results.length === 0) {
         container.innerHTML = `<tr><td colspan="6" class="text-center font-bold text-slate-500 py-6">No matching result records found.</td></tr>`;
       } else {
-        container.innerHTML = results.slice(0, 50).map(r => `
+        container.innerHTML = results.slice(0, 100).map(r => `
           <tr>
             <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base">${r.marketName}</td>
             <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700">${r.resultValue}</td>
@@ -420,7 +423,10 @@ function renderMarketDetailPage() {
 
     const historyTable = document.getElementById('detail-history-table');
     if (historyTable) {
-      const history = window.dataEngine.getResults().filter(r => r.slug === slug);
+      const history = window.dataEngine.getResults()
+        .filter(r => r.slug === slug)
+        .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
+
       if (history.length === 0) {
         historyTable.innerHTML = `<tr><td colspan="6" class="text-center font-bold text-slate-500 py-6">No historical records found for this market.</td></tr>`;
       } else {

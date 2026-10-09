@@ -1,11 +1,11 @@
-// Fastsatta.live Main UI Script with Bulletproof Router & Title Matcher
+// Fastsatta.live Main UI Script with 100% Dynamic Auto-Updating Month Banners
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
   startLiveTimestampClock();
   updateDynamicSEOMetadata();
 
-  // Bulletproof Route-based initialization for ALL pages (using includes for query param compatibility)
+  // Bulletproof Route-based initialization for ALL pages
   const path = window.location.pathname.toLowerCase();
 
   if (path.includes('today.html')) {
@@ -191,7 +191,7 @@ function formatMixChartCell(val, colorClass) {
   return `<span class="font-mono font-black ${colorClass} text-base sm:text-lg">${val}</span>`;
 }
 
-// Page 1: Homepage Renderer
+// Page 1: Homepage Renderer (With Dynamic Month/Year Banners)
 function renderHomePage() {
   const cardsContainer = document.getElementById('today-cards-container');
   const summaryTableBody = document.getElementById('summary-table-body');
@@ -211,6 +211,16 @@ function renderHomePage() {
 
   const todayFormatted = getFormattedISTDateShort(todayDateObj);
   const yesterdayFormatted = getFormattedISTDateShort(yDateObj);
+
+  // 0. Update Chart Banner Headings Dynamically (e.g. OCTOBER 2026 -> NOVEMBER 2026)
+  const monthNamesUpper = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const currentMonthYearStr = `${monthNamesUpper[todayDateObj.getMonth()]} ${todayDateObj.getFullYear()}`;
+
+  const mixBanners = document.querySelectorAll('.mix-chart-header-banner');
+  if (mixBanners.length >= 2) {
+    mixBanners[0].innerText = `${currentMonthYearStr} SATTA KING MIX RECORD CHART (DISAWAR • HARYANA KING • RAM BAZAR • DELHI BAZAR • SHREE GANESH)`;
+    mixBanners[1].innerText = `${currentMonthYearStr} SATTA KING MIX RECORD CHART (FARIDABAD • AMBALA KING • GAZIYABAD • HIMACHAL NIGHT • GALI)`;
+  }
 
   // 1. Render Result Cards Dashboard
   if (cardsContainer) {
@@ -278,9 +288,6 @@ function renderHomePage() {
   }
 
   // 3. Render Monthly Matrix Chart 1 (Morning & Afternoon Markets)
-  const curYear = todayDateObj.getFullYear();
-  const curMonth = todayDateObj.getMonth() + 1;
-
   if (monthlyMatrixContainer) {
     const matrix1 = window.dataEngine.getMonthlyMatrix(curYear, curMonth, ['disawar', 'haryana-king', 'ram-bazar', 'delhi-bazar', 'shree-ganesh']);
     monthlyMatrixContainer.innerHTML = matrix1.rows.map(r => `
@@ -372,7 +379,7 @@ function renderRecordChartPage() {
   syncSocialSettings();
 }
 
-// Page 4: All Results Search Page (100% Mobile Responsive Table Rows)
+// Page 4: All Results Search Page
 function renderResultsPage() {
   const container = document.getElementById('results-list-table-body');
   const input = document.getElementById('results-search-input');

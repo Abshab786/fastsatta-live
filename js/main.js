@@ -1,10 +1,9 @@
-// Fastsatta.live Main UI Script & IST Dynamic Satta Engine (Social Settings Sync)
+// Fastsatta.live Main UI Script & IST Dynamic Satta Engine with Multi-Tab Instant Sync
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
   startLiveTimestampClock();
   updateDynamicSEOMetadata();
-  syncSocialSettings();
 
   // Route-based initialization for ALL pages
   const path = window.location.pathname.toLowerCase();
@@ -28,12 +27,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const curPath = window.location.pathname.toLowerCase();
     if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
       renderHomePage();
-      syncSocialSettings();
     } else if (curPath.endsWith('today.html')) {
       renderTodayPage();
-      syncSocialSettings();
     }
   }, 5000);
+});
+
+// ⚡ Multi-Tab Instant LocalStorage Sync
+window.addEventListener('storage', (e) => {
+  if (e.key === 'fastsatta_results' || e.key === 'fastsatta_markets' || e.key === 'fastsatta_settings') {
+    const curPath = window.location.pathname.toLowerCase();
+    if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
+      renderHomePage();
+    } else if (curPath.endsWith('today.html')) {
+      renderTodayPage();
+    } else if (curPath.endsWith('record-chart.html')) {
+      renderRecordChartPage();
+    } else if (curPath.endsWith('results.html')) {
+      renderResultsPage();
+    } else if (curPath.endsWith('result-detail.html')) {
+      renderMarketDetailPage();
+    }
+  }
 });
 
 function syncSocialSettings() {
@@ -256,7 +271,7 @@ function renderHomePage() {
     }).join('');
   }
 
-  // 3. Render Monthly Matrix Chart 1 (Morning & Afternoon Markets: 05:00 AM - 04:40 PM)
+  // 3. Render Monthly Matrix Chart 1 (Morning & Afternoon Markets)
   const curYear = todayDateObj.getFullYear();
   const curMonth = todayDateObj.getMonth() + 1;
 
@@ -274,7 +289,7 @@ function renderHomePage() {
     `).join('');
   }
 
-  // 4. Render Monthly Matrix Chart 2 (Evening & Night Markets: 06:10 PM - 12:00 AM)
+  // 4. Render Monthly Matrix Chart 2 (Evening & Night Markets)
   if (monthlyMatrixContainer2) {
     const matrix2 = window.dataEngine.getMonthlyMatrix(curYear, curMonth, ['faridabad', 'ambala-king', 'gaziyabad', 'himachal-night', 'gali']);
     monthlyMatrixContainer2.innerHTML = matrix2.rows.map(r => `

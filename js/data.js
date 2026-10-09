@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Firebase Sync Error Reporting
+// Fastsatta.live - Market & Chart Data Engine with Dual-Region Firebase Cloud Sync
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -48,7 +48,6 @@ const BACKUP_DATABASE = {
   }
 };
 
-// ⏰ Reliable IST Date Helpers (UTC+05:30)
 function getISTDateObj() {
   const now = new Date();
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -176,41 +175,43 @@ class DataEngine {
     }
   }
 
-  // 🔥 Firebase Realtime Cloud Sync Listener
+  // 🔥 Firebase Realtime Cloud Sync
   initFirebaseSync() {
     if (typeof firebase !== 'undefined' && firebase.database) {
-      this.db = firebase.database();
+      try {
+        this.db = firebase.database();
+      } catch(e) {
+        console.warn("Firebase db init:", e);
+      }
 
-      this.db.ref('fastsatta/results').on('value', (snapshot) => {
-        const fbData = snapshot.val();
-        if (fbData) {
-          const resultsList = Object.values(fbData);
-          localStorage.setItem('fastsatta_results', JSON.stringify(resultsList));
-          this.refreshAllPageViews();
-        }
-      }, (error) => {
-        console.warn("⚠️ Firebase Results Listener Permission Error:", error.message);
-      });
+      if (this.db) {
+        this.db.ref('fastsatta/results').on('value', (snapshot) => {
+          const fbData = snapshot.val();
+          if (fbData) {
+            const resultsList = Object.values(fbData);
+            localStorage.setItem('fastsatta_results', JSON.stringify(resultsList));
+            this.refreshAllPageViews();
+          }
+        }, (error) => {
+          console.warn("⚠️ Firebase Results Sync Error:", error.message);
+        });
 
-      this.db.ref('fastsatta/markets').on('value', (snapshot) => {
-        const fbMarkets = snapshot.val();
-        if (fbMarkets) {
-          localStorage.setItem('fastsatta_markets', JSON.stringify(fbMarkets));
-          this.refreshAllPageViews();
-        }
-      }, (error) => {
-        console.warn("⚠️ Firebase Markets Listener Permission Error:", error.message);
-      });
+        this.db.ref('fastsatta/markets').on('value', (snapshot) => {
+          const fbMarkets = snapshot.val();
+          if (fbMarkets) {
+            localStorage.setItem('fastsatta_markets', JSON.stringify(fbMarkets));
+            this.refreshAllPageViews();
+          }
+        });
 
-      this.db.ref('fastsatta/settings').on('value', (snapshot) => {
-        const fbSettings = snapshot.val();
-        if (fbSettings) {
-          localStorage.setItem('fastsatta_settings', JSON.stringify(fbSettings));
-          if (typeof syncSocialSettings === 'function') syncSocialSettings();
-        }
-      }, (error) => {
-        console.warn("⚠️ Firebase Settings Listener Permission Error:", error.message);
-      });
+        this.db.ref('fastsatta/settings').on('value', (snapshot) => {
+          const fbSettings = snapshot.val();
+          if (fbSettings) {
+            localStorage.setItem('fastsatta_settings', JSON.stringify(fbSettings));
+            if (typeof syncSocialSettings === 'function') syncSocialSettings();
+          }
+        });
+      }
     }
   }
 
@@ -232,7 +233,6 @@ class DataEngine {
       this.db.ref('fastsatta/markets').set(markets, (error) => {
         if (error) {
           console.error("❌ Firebase Markets Write Error:", error.message);
-          alert(`⚠️ FIREBASE PERMISSION ERROR:\n\nFirebase Cloud write failed: "${error.message}"\n\nPlease set Firebase Rules to { "rules": { ".read": true, ".write": true } }`);
         }
       });
     }
@@ -249,7 +249,6 @@ class DataEngine {
       this.db.ref('fastsatta/settings').set(settings, (error) => {
         if (error) {
           console.error("❌ Firebase Settings Write Error:", error.message);
-          alert(`⚠️ FIREBASE PERMISSION ERROR:\n\nFirebase Cloud write failed: "${error.message}"\n\nPlease set Firebase Rules to { "rules": { ".read": true, ".write": true } }`);
         }
       });
     }
@@ -428,7 +427,6 @@ class DataEngine {
     return { year, month, daysInMonth, maxDayToShow, marketSlugs, rows };
   }
 
-  // 🚀 Save & Sync Result Record
   addOrUpdateResult(data) {
     const results = this.getResults();
     const dateParts = data.resultDate.split('-');
@@ -465,12 +463,12 @@ class DataEngine {
 
     this.saveResults(results);
 
-    // Sync to Firebase Database Cloud with Explicit Error Feedback
+    // Write to Firebase Realtime Database
     if (this.db) {
       this.db.ref(`fastsatta/results/${record.id}`).set(record, (error) => {
         if (error) {
           console.error("❌ Firebase Write Error:", error.message);
-          alert(`⚠️ FIREBASE PERMISSION NOTICE:\n\nFirebase Cloud write failed with error: "${error.message}".\n\nPlease go to Firebase Console -> Realtime Database -> Rules and set:\n\n{ "rules": { ".read": true, ".write": true } }`);
+          alert(`⚠️ FIREBASE CONNECTION NOTICE:\n\nFirebase Cloud write error: "${error.message}"\n\nPlease check Firebase Console -> Realtime Database -> Rules: { "rules": { ".read": true, ".write": true } }`);
         } else {
           console.log("✅ Firebase Cloud Sync Successful!");
         }

@@ -11,9 +11,13 @@ const firebaseConfig = {
   measurementId: "G-LF3G115RLP"
 };
 
-// Initialize Firebase
+// Initialize Firebase App
 if (typeof firebase !== 'undefined') {
-  firebase.initializeApp(firebaseConfig);
-  if (firebase.analytics) firebase.analytics();
-  console.log("🔥 Firebase Realtime Database connected successfully for fastsatta-live!");
+  if (!firebase.apps || !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  if (firebase.analytics) {
+    try { firebase.analytics(); } catch(e) {}
+  }
+  console.log("🔥 Firebase initialized for fastsatta-live!");
 }

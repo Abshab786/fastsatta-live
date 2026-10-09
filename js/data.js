@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Perfect 24-Hour Card Rotation
+// Fastsatta.live - Market & Chart Data Engine with 24-Hour Circular Draw-Time Sorting
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -14,7 +14,7 @@ const DEFAULT_MARKETS = [
 ];
 
 const DEFAULT_SETTINGS = {
-  waLink: "https://api.whatsapp.com/send?phone=918628963178&text=%E0%A4%AE%E0%A5%81%E0%A4%9B%E0%A5%87%20%E0%A4%97%E0%A5%87%E0%A4%AE%20%E0%A4%AA%E0%A5%8D%E0%A4%B2%E0%A5%87%20%E0%A4%95%E0%A4%B0%E0%A4%A1%E0%A4%BE%20%E0%A4%B9%E0%A5%82%E0%A4%82",
+  waLink: "https://api.whatsapp.com/send?phone=918628963178&text=%E0%A4%AE%E0%A5%81%E0%A4%9B%E0%A5%87%20Fastsatta.live%20%E0%A4%AA%E0%A4%B0%20%E0%A4%97%E0%A5%87%E0%A4%AE%20%2F%20%E0%A4%AE%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%95%E0%A4%BF%E0%A4%9F%20%E0%A4%B6%E0%A5%8B%20%E0%A4%95%E0%A4%B0%E0%A4%B5%E0%A4%BE%E0%A4%A8%E0%A4%BE%20%E0%A4%B9%E0%A5%82%E0%A4%82",
   tgLink: "https://t.me/",
   waEnabled: true,
   tgEnabled: true
@@ -31,7 +31,7 @@ const BACKUP_DATABASE = {
       "06": { "AK": "98", "DB": "29", "DS": "59", "FB": "01", "GL": "53", "GZ": "38", "HK": "94", "HN": "44", "RB": "59", "SG": "27" },
       "07": { "AK": "96", "DB": "06", "DS": "23", "FB": "87", "GL": "29", "GZ": "84", "HK": "43", "HN": "21", "RB": "55", "SG": "89" },
       "08": { "AK": "12", "DB": "07", "DS": "90", "FB": "92", "GL": "62", "GZ": "74", "HK": "00", "HN": "27", "RB": "13", "SG": "02" },
-      "09": { "DS": "26", "HK": "96", "AK": "XX", "DB": "XX", "FB": "XX", "GL": "XX", "GZ": "XX", "HN": "XX", "RB": "XX", "SG": "XX" }
+      "09": { "DS": "26", "HK": "96", "SG": "51", "AK": "XX", "DB": "XX", "FB": "XX", "GL": "XX", "GZ": "XX", "HN": "XX", "RB": "XX" }
     },
     "09": {
       "01": { "AK": "15", "DB": "58", "DS": "43", "FB": "45", "GL": "81", "GZ": "86", "HK": "88", "HN": "76", "RB": "98", "SG": "89" },
@@ -115,6 +115,17 @@ function generateFullDemoResults() {
         let val = (code && dayMap[code]) ? dayMap[code] : '';
         if (!val || val === '') val = 'XX';
 
+        let updatedTimeStr = '2026-10-08T00:00:00.000+05:30';
+        if (dateStr === '2026-10-09') {
+          if (m.slug === 'disawar') {
+            updatedTimeStr = '2026-10-09T05:05:00.000+05:30';
+          } else if (m.slug === 'haryana-king') {
+            updatedTimeStr = '2026-10-09T13:35:00.000+05:30';
+          } else if (m.slug === 'shree-ganesh') {
+            updatedTimeStr = new Date().toISOString();
+          }
+        }
+
         results.push({
           id: `res-${m.id}-${dateStr}`,
           marketId: m.id,
@@ -131,7 +142,7 @@ function generateFullDemoResults() {
           year: 2026,
           month: monthNum,
           day: dayNum,
-          updatedAt: `${dateStr}T12:00:00.000Z`
+          updatedAt: updatedTimeStr
         });
       });
     }
@@ -147,21 +158,14 @@ class DataEngine {
   }
 
   init() {
-    const CURRENT_DATA_VERSION = 'v2026_perfect_card_rotation_v40';
+    const CURRENT_DATA_VERSION = 'v2026_circular_time_sort_v500';
     localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
 
     if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION) {
+      localStorage.removeItem('fastsatta_results');
       const freshData = generateFullDemoResults();
       localStorage.setItem('fastsatta_results', JSON.stringify(freshData));
       localStorage.setItem('fastsatta_data_version', CURRENT_DATA_VERSION);
-
-      if (this.db) {
-        try {
-          const cloudObj = {};
-          freshData.forEach(item => { cloudObj[item.id] = item; });
-          this.db.ref('fastsatta/results').set(cloudObj);
-        } catch(e) {}
-      }
     }
 
     if (!localStorage.getItem('fastsatta_settings')) {
@@ -178,6 +182,17 @@ class DataEngine {
       }
 
       if (this.db) {
+        const CURRENT_DATA_VERSION = 'v2026_circular_time_sort_v500';
+        if (localStorage.getItem('fastsatta_cloud_synced_version') !== CURRENT_DATA_VERSION) {
+          try {
+            const freshData = generateFullDemoResults();
+            const cloudObj = {};
+            freshData.forEach(item => { cloudObj[item.id] = item; });
+            this.db.ref('fastsatta/results').set(cloudObj);
+            localStorage.setItem('fastsatta_cloud_synced_version', CURRENT_DATA_VERSION);
+          } catch(e) {}
+        }
+
         this.db.ref('fastsatta/results').on('value', (snapshot) => {
           const fbData = snapshot.val();
           if (fbData) {
@@ -305,7 +320,7 @@ class DataEngine {
     return false;
   }
 
-  // 🎯 Perfect 24-Hour Card Rotation Algorithm
+  // 🎯 100% Perfect 24-Hour Circular Draw-Time Sorting Algorithm
   getTodaySummaryDynamic(todayDate = null, yesterdayDate = null) {
     const istDateStr = getISTDateString();
     if (!todayDate) todayDate = istDateStr;
@@ -323,64 +338,82 @@ class DataEngine {
     const nowMinutes = istNow.getHours() * 60 + istNow.getMinutes();
 
     const summaryList = markets.map(m => {
-      let t = allResults.find(r => r.marketId === m.id && r.resultDate === todayDate);
+      // Bulletproof Lookup: Match by marketId OR slug OR marketName!
+      let t = allResults.find(r =>
+        r.resultDate === todayDate && (
+          r.marketId === m.id ||
+          (r.slug && r.slug.toLowerCase() === m.slug.toLowerCase()) ||
+          (r.marketName && r.marketName.toLowerCase() === m.name.toLowerCase())
+        )
+      );
 
       // Smart Fallback
       if (!t) {
-        const mResults = allResults.filter(r => r.marketId === m.id);
+        const mResults = allResults.filter(r =>
+          r.marketId === m.id ||
+          (r.slug && r.slug.toLowerCase() === m.slug.toLowerCase()) ||
+          (r.marketName && r.marketName.toLowerCase() === m.name.toLowerCase())
+        ).sort((a, b) => b.resultDate.localeCompare(a.resultDate));
+
         if (mResults.length > 0) {
           t = mResults[0];
         }
       }
 
-      let y = allResults.find(r => r.marketId === m.id && r.resultDate === yesterdayDate);
+      let y = allResults.find(r =>
+        r.resultDate === yesterdayDate && (
+          r.marketId === m.id ||
+          (r.slug && r.slug.toLowerCase() === m.slug.toLowerCase()) ||
+          (r.marketName && r.marketName.toLowerCase() === m.name.toLowerCase())
+        )
+      );
+
       if (!y && t) {
-        const priorResults = allResults.filter(r => r.marketId === m.id && r.resultDate < t.resultDate);
+        const priorResults = allResults.filter(r =>
+          (r.marketId === m.id || (r.slug && r.slug.toLowerCase() === m.slug.toLowerCase())) &&
+          r.resultDate < t.resultDate
+        );
         if (priorResults.length > 0) {
           y = priorResults[0];
         }
       }
 
-      // STRICT CHECK: Is the result declared for TODAY's date?
+      // STRICT CHECK: Is result declared TODAY?
       const isTodayDeclared = (t && t.resultValue && t.resultValue !== 'XX' && t.resultDate === todayDate);
 
-      // Check age in minutes since publication
+      // Calculate time age in minutes since publication
       const updatedAtMs = (t && t.updatedAt) ? new Date(t.updatedAt).getTime() : 0;
-      const ageMinutes = (istNow.getTime() - updatedAtMs) / (1000 * 60);
+      const ageMinutes = (updatedAtMs > 0) ? (istNow.getTime() - updatedAtMs) / (1000 * 60) : 999;
 
-      const timeDiff = m.timeMinutes - nowMinutes;
+      let timeDiff = m.timeMinutes - nowMinutes;
 
       let badge = 'NONE';
       let priorityScore = 100;
       let isNextUpcoming = false;
       let isFreshNew = false;
 
-      // 🥇 TIER 1: Result NOT declared today AND draw time is coming up in next 30 minutes -> "NEXT ⏳" (FLOATS TO TOP #1!)
+      // 🥇 TIER 1: Draw time in next 30 minutes AND result pending -> "NEXT ⏳" (FLOATS TO TOP #1 RANK!)
       if (!isTodayDeclared && timeDiff >= -5 && timeDiff <= 30) {
         badge = 'NEXT ⏳';
         priorityScore = 10;
         isNextUpcoming = true;
       }
-      // 🥈 TIER 2: Result WAS Declared Today AND updated within last 60 minutes -> "NEW ⚡" (FLOATS TO #2 RIGHT BELOW NEXT!)
-      else if (isTodayDeclared && (ageMinutes <= 60 || !t.updatedAt)) {
+      // 🥈 TIER 2: Freshly Published Admin Upload (within last 60 minutes) -> "NEW ⚡" (FLOATS TO RANK #2!)
+      else if (isTodayDeclared && ageMinutes <= 60) {
         badge = 'NEW ⚡';
         priorityScore = 20;
         isFreshNew = true;
       }
-      // 🥉 TIER 3: Result pending & upcoming later today -> Ordered by upcoming draw time!
-      else if (!isTodayDeclared && timeDiff > 30) {
-        badge = 'NONE';
-        priorityScore = 30 + timeDiff;
-      }
-      // 🏅 TIER 4: Result pending & draw time passed earlier today
-      else if (!isTodayDeclared) {
-        badge = 'NONE';
-        priorityScore = 50 + (1440 + timeDiff);
-      }
-      // 🏅 TIER 5: Declared earlier today
+      // 🥉 TIER 3: General State for All 10 Markets -> Circular 24-Hour Draw Time Sorting!
       else {
         badge = 'NONE';
-        priorityScore = 100 + m.timeMinutes;
+        priorityScore = 100;
+      }
+
+      // Calculate circular 24-hour remaining time offset (for passed draws today)
+      let circularSortOffset = timeDiff;
+      if (circularSortOffset < -30) {
+        circularSortOffset += 1440; // Push draws that passed hours ago to tomorrow's queue!
       }
 
       return {
@@ -396,6 +429,8 @@ class DataEngine {
         badge: badge,
         isNextUpcoming: isNextUpcoming,
         isFreshNew: isFreshNew,
+        updatedAtMs: updatedAtMs,
+        circularSortOffset: circularSortOffset,
         todayValue: isTodayDeclared ? t.resultValue : 'XX',
         yesterdayValue: (y && y.resultValue && y.resultValue !== '') ? y.resultValue : (t && t.yesterdayValue ? t.yesterdayValue : 'XX'),
         isSecret: false,
@@ -407,11 +442,21 @@ class DataEngine {
       };
     });
 
+    // 🚀 Multi-Tier Circular Sorting Algorithm:
+    // 1. Priority Tier Score (Next Upcoming = 10, Fresh New = 20, General = 100)
+    // 2. For Fresh Results (priorityScore == 20): NEWEST ADMIN PUBLISH FLOATS TO VERY TOP!
+    // 3. For General Markets: Order strictly by 24-hour circular upcoming draw time (circularSortOffset)!
     return summaryList.sort((a, b) => {
       if (a.priorityScore !== b.priorityScore) {
         return a.priorityScore - b.priorityScore;
       }
-      return a.timeMinutes - b.timeMinutes;
+
+      // If both are FRESH NEW results (priorityScore == 20): Most recently updated/published floats to the TOP!
+      if (a.priorityScore === 20 && b.priorityScore === 20) {
+        return b.updatedAtMs - a.updatedAtMs;
+      }
+
+      return a.circularSortOffset - b.circularSortOffset;
     });
   }
 

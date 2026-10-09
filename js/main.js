@@ -1,4 +1,4 @@
-// Fastsatta.live Main UI Script with Instant Search & Instant Record Chart Dropdown Filter
+// Fastsatta.live Main UI Script with Bulletproof Cross-Device Search & Dropdown Filter Engine
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
@@ -327,7 +327,7 @@ function renderTodayPage() {
   renderHomePage();
 }
 
-// Page 3: Record Chart Page (Instant Dropdown Change & Render)
+// Page 3: Record Chart Page (Instant Dropdown & URL Sync)
 function renderRecordChartPage() {
   const params = new URLSearchParams(window.location.search);
   let slug = params.get('slug') || 'disawar';
@@ -362,7 +362,7 @@ function renderRecordChartPage() {
           <tr>
             <td class="font-bold text-[11px] sm:text-xs text-red-800 text-left px-2 py-2 whitespace-nowrap">${formatDisplayDate(r.resultDate)}</td>
             <td class="text-[11px] sm:text-xs text-slate-800 text-center px-1 py-2 whitespace-nowrap">${r.day < 10 ? '0' + r.day : r.day}</td>
-            <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700 px-1 py-2 whitespace-nowrap">${r.resultValue}</td>
+            <td class="text-center font-mono font-black text-xl sm:text-2xl ${r.resultValue === 'XX' ? 'text-slate-300 font-medium' : 'text-emerald-700'} px-1 py-2 whitespace-nowrap">${r.resultValue}</td>
             <td class="text-right text-[10px] sm:text-xs px-2 py-2 whitespace-nowrap"><span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">${r.status || 'UPDATED'}</span></td>
           </tr>
         `).join('');
@@ -388,13 +388,16 @@ function renderRecordChartPage() {
   syncSocialSettings();
 }
 
-// Page 4: All Results Search Page (Instant Multi-Field Search Matcher)
+// Page 4: All Results Search Page (Instant Cross-Device Search)
 function renderResultsPage() {
   const container = document.getElementById('results-list-table-body');
   const input = document.getElementById('results-search-input');
 
   const render = (query = '') => {
-    let results = window.dataEngine.getResults().sort((a, b) => b.resultDate.localeCompare(a.resultDate));
+    let results = window.dataEngine.getResults()
+      .filter(r => r.resultValue && r.resultValue !== 'XX')
+      .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
+
     if (query) {
       const qLower = query.toLowerCase().trim();
       results = results.filter(r => {
@@ -432,7 +435,10 @@ function renderResultsPage() {
     }
   };
 
-  if (input) input.addEventListener('input', e => render(e.target.value.trim()));
+  if (input) {
+    input.oninput = (e) => render(e.target.value);
+    input.onkeyup = (e) => render(e.target.value);
+  }
   render();
   syncSocialSettings();
 }
@@ -469,7 +475,7 @@ function renderMarketDetailPage() {
     const historyTable = document.getElementById('detail-history-table');
     if (historyTable) {
       const history = window.dataEngine.getResults()
-        .filter(r => r.slug.toLowerCase() === slug.toLowerCase())
+        .filter(r => r.slug.toLowerCase() === slug.toLowerCase() && r.resultValue && r.resultValue !== 'XX')
         .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
 
       if (history.length === 0) {

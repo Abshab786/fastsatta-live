@@ -26,7 +26,7 @@
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=3.0">
 
   <script type="application/ld+json">
   {
@@ -103,7 +103,7 @@
         </a>
 
         <div class="hidden sm:flex space-x-1 text-xs font-black uppercase tracking-wider mx-auto">
-          <a href="index.html" class="satta-nav-link" title="Home">Home</a>
+          <a href="index.html" class="satta-nav-link">Home</a>
           <a href="today.html" class="satta-nav-link active" title="Today Results">Today Results</a>
           <a href="results.html" class="satta-nav-link" title="All Results">All Results</a>
           <a href="record-chart.html" class="satta-nav-link" title="Record Chart">Record Chart</a>
@@ -150,10 +150,10 @@
 
       <!-- Compact WhatsApp & Telegram Share Buttons -->
       <div class="flex justify-center items-center space-x-3">
-        <a href="https://api.whatsapp.com/send?text=Check%20Today%20Satta%20King%20Live%20Results%20on%20FastSatta.live%20https://fastsatta.live/today.html" target="_blank" rel="noopener noreferrer" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center space-x-1 shadow-sm transition-all" title="Share FastSatta on WhatsApp">
+        <a href="https://api.whatsapp.com/send?text=Check%20Today%20Satta%20King%20Live%20Results%20on%20FastSatta.live%20https://fastsatta.live/today.html" target="_blank" rel="noopener noreferrer" class="btn-wa-action bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center space-x-1 shadow-sm transition-all" title="Share FastSatta on WhatsApp">
           <span>WhatsApp Share</span>
         </a>
-        <a href="https://t.me/share/url?url=https://fastsatta.live/today.html&text=Check%20Today%20Satta%20King%20Live%20Results%20on%20FastSatta.live" target="_blank" rel="noopener noreferrer" class="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center space-x-1 shadow-sm transition-all" title="Share FastSatta on Telegram">
+        <a href="https://t.me/share/url?url=https://fastsatta.live/today.html&text=Check%20Today%20Satta%20King%20Live%20Results%20on%20FastSatta.live" target="_blank" rel="noopener noreferrer" class="btn-tg-action bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center space-x-1 shadow-sm transition-all" title="Share FastSatta on Telegram">
           <span>Telegram Share</span>
         </a>
       </div>
@@ -174,7 +174,13 @@
     </div>
   </footer>
 
-  <script src="js/data.js"></script>
-  <script src="js/main.js"></script>
+  <!-- Firebase Web SDK Compat Scripts for Realtime Cloud Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+  <script src="js/firebase-config.js?v=3.0"></script>
+
+  <script src="js/data.js?v=3.0"></script>
+  <script src="js/main.js?v=3.0"></script>
 </body>
 </html>

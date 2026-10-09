@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Zero-Flicker Instant Rendering
+// Fastsatta.live - Market & Chart Data Engine with Dataset Version Force-Reload
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -148,20 +148,31 @@ class DataEngine {
     this.initFirebaseSync();
   }
 
-  // 🚀 Zero-Flicker Init: Only initialize if LocalStorage is empty!
+  // 🚀 Dataset Version Force-Reload to load all imported 2026 backup historical results
   init() {
-    if (!localStorage.getItem('fastsatta_markets')) {
-      localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
+    const CURRENT_DATA_VERSION = 'v2026_full_backup_v5';
+    localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
+
+    if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION) {
+      const freshData = generateFullDemoResults();
+      localStorage.setItem('fastsatta_results', JSON.stringify(freshData));
+      localStorage.setItem('fastsatta_data_version', CURRENT_DATA_VERSION);
+
+      if (this.db) {
+        try {
+          freshData.forEach(item => {
+            this.db.ref(`fastsatta/results/${item.id}`).set(item);
+          });
+        } catch(e) {}
+      }
     }
-    if (!localStorage.getItem('fastsatta_results')) {
-      localStorage.setItem('fastsatta_results', JSON.stringify(generateFullDemoResults()));
-    }
+
     if (!localStorage.getItem('fastsatta_settings')) {
       localStorage.setItem('fastsatta_settings', JSON.stringify(DEFAULT_SETTINGS));
     }
   }
 
-  // 🔥 Firebase Realtime Cloud Sync (With Anti-Flicker Change Detection)
+  // 🔥 Firebase Realtime Cloud Sync
   initFirebaseSync() {
     if (typeof firebase !== 'undefined' && firebase.database) {
       try {
@@ -178,7 +189,6 @@ class DataEngine {
             const currentLocal = localStorage.getItem('fastsatta_results');
             const newString = JSON.stringify(resultsList);
 
-            // ONLY re-render if data has ACTUALLY changed! (Prevents 1-sec flashing/blinking)
             if (currentLocal !== newString) {
               localStorage.setItem('fastsatta_results', newString);
               this.refreshAllPageViews();

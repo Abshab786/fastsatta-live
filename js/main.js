@@ -1,4 +1,4 @@
-// Fastsatta.live Main UI Script & IST Dynamic Satta Engine with Multi-Tab Instant Sync
+// Fastsatta.live Main UI Script & IST Dynamic Satta Engine (Sorted Historical Archives)
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
@@ -165,7 +165,7 @@ function startLiveTimestampClock() {
   setInterval(updateClock, 1000);
 }
 
-// Helper to format Mix Chart cell values (Light grey for unreleased XX)
+// Helper to format Mix Chart cell values
 function formatMixChartCell(val, colorClass) {
   if (val === '---') {
     return `<span class="text-xs text-red-600 font-bold">---</span>`;
@@ -312,7 +312,7 @@ function renderTodayPage() {
   renderHomePage();
 }
 
-// Page 3: Record Chart Page
+// Page 3: Record Chart Page (Sorted Descending Date)
 function renderRecordChartPage() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug') || 'disawar';
@@ -340,7 +340,9 @@ function renderRecordChartPage() {
   }
 
   if (tableBody && window.dataEngine) {
-    const results = window.dataEngine.getResults().filter(r => r.slug === slug);
+    const results = window.dataEngine.getResults()
+      .filter(r => r.slug === slug)
+      .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
 
     if (results.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="4" class="text-center font-bold text-slate-500 py-6">No record chart data available for this market.</td></tr>`;
@@ -359,13 +361,13 @@ function renderRecordChartPage() {
   syncSocialSettings();
 }
 
-// Page 4: All Results Search Page
+// Page 4: All Results Search Page (Sorted Descending Date)
 function renderResultsPage() {
   const container = document.getElementById('results-list-table-body');
   const input = document.getElementById('results-search-input');
 
   const render = (query = '') => {
-    let results = window.dataEngine.getResults();
+    let results = window.dataEngine.getResults().sort((a, b) => b.resultDate.localeCompare(a.resultDate));
     if (query) {
       results = results.filter(r =>
         r.marketName.toLowerCase().includes(query.toLowerCase()) ||
@@ -377,7 +379,7 @@ function renderResultsPage() {
       if (results.length === 0) {
         container.innerHTML = `<tr><td colspan="6" class="text-center font-bold text-slate-500 py-6">No matching result records found.</td></tr>`;
       } else {
-        container.innerHTML = results.slice(0, 50).map(r => `
+        container.innerHTML = results.slice(0, 100).map(r => `
           <tr>
             <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base">${r.marketName}</td>
             <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700">${r.resultValue}</td>
@@ -420,7 +422,10 @@ function renderMarketDetailPage() {
 
     const historyTable = document.getElementById('detail-history-table');
     if (historyTable) {
-      const history = window.dataEngine.getResults().filter(r => r.slug === slug);
+      const history = window.dataEngine.getResults()
+        .filter(r => r.slug === slug)
+        .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
+
       if (history.length === 0) {
         historyTable.innerHTML = `<tr><td colspan="6" class="text-center font-bold text-slate-500 py-6">No historical records found for this market.</td></tr>`;
       } else {

@@ -1,4 +1,4 @@
-// Fastsatta.live Main UI Script & IST Dynamic Satta Engine (Sorted Historical Archives)
+// Fastsatta.live Main UI Script with Real-Time 30-Min Dynamic Floating Carousel Badges
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHomePage();
   }
 
-  // Auto-refresh dynamic sorting every 5 seconds for homepage and today page
+  // Auto-refresh dynamic sorting every 10 seconds for real-time carousel rotation
   setInterval(() => {
     const curPath = window.location.pathname.toLowerCase();
     if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (curPath.endsWith('today.html')) {
       renderTodayPage();
     }
-  }, 5000);
+  }, 10000);
 });
 
 // ⚡ Multi-Tab Instant LocalStorage Sync
@@ -176,7 +176,7 @@ function formatMixChartCell(val, colorClass) {
   return `<span class="font-mono font-black ${colorClass} text-base sm:text-lg">${val}</span>`;
 }
 
-// Page 1: Homepage Renderer
+// Page 1: Homepage Renderer with Real-Time 30-Min Dynamic Carousel Badges
 function renderHomePage() {
   const cardsContainer = document.getElementById('today-cards-container');
   const summaryTableBody = document.getElementById('summary-table-body');
@@ -197,16 +197,17 @@ function renderHomePage() {
   const todayFormatted = getFormattedISTDateShort(todayDateObj);
   const yesterdayFormatted = getFormattedISTDateShort(yDateObj);
 
-  // 1. Render Result Cards Dashboard
+  // 1. Render Result Cards Dashboard (Dynamic Floating Carousel Order)
   if (cardsContainer) {
     cardsContainer.innerHTML = todaySummary.map(item => {
       const isPending = item.todayValue === 'XX' || item.status === 'PENDING';
       const isSecret = item.isSecret;
-      const isLive = item.status === 'LIVE' || item.badge === 'LIVE ⚡';
 
       let badgeHTML = '';
-      if (isLive) {
-        badgeHTML = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white animate-pulse whitespace-nowrap shrink-0">LIVE NOW ⚡</span>`;
+      if (item.badge === 'NEXT ⏳' || item.isNextUpcoming) {
+        badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEXT ⏳</span>`;
+      } else if (item.badge === 'NEW ⚡' || item.isFreshNew || item.status === 'LIVE') {
+        badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEW ⚡</span>`;
       }
 
       return `
@@ -312,7 +313,7 @@ function renderTodayPage() {
   renderHomePage();
 }
 
-// Page 3: Record Chart Page (Sorted Descending Date)
+// Page 3: Record Chart Page
 function renderRecordChartPage() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug') || 'disawar';
@@ -361,7 +362,7 @@ function renderRecordChartPage() {
   syncSocialSettings();
 }
 
-// Page 4: All Results Search Page (Sorted Descending Date)
+// Page 4: All Results Search Page
 function renderResultsPage() {
   const container = document.getElementById('results-list-table-body');
   const input = document.getElementById('results-search-input');

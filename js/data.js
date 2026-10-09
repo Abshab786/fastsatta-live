@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Dataset Version Force-Reload
+// Fastsatta.live - Market & Chart Data Engine with 60-Minute NEW Badge Highlight Rule
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -23,7 +23,7 @@ const DEFAULT_SETTINGS = {
 const BACKUP_DATABASE = {
   "2026": {
     "10": {
-      "01": { "AK": "63", "DB": "76", "FB": "42", "GL": "93", "GZ": "67", "HK": "85", "HN": "00", "RB": "17", "SG": "51", "DS": "XX" },
+      "01": { "AK": "63", "DB": "76", "DS": "70", "FB": "42", "GL": "93", "GZ": "67", "HK": "85", "HN": "00", "RB": "17", "SG": "51" },
       "02": { "AK": "10", "DB": "25", "DS": "52", "FB": "05", "GL": "01", "GZ": "81", "HK": "10", "HN": "09", "RB": "75", "SG": "31" },
       "03": { "AK": "88", "DB": "25", "DS": "18", "FB": "58", "GL": "68", "GZ": "95", "HK": "80", "HN": "55", "RB": "56", "SG": "54" },
       "04": { "AK": "77", "DB": "91", "DS": "15", "FB": "36", "GL": "80", "GZ": "98", "HK": "67", "HN": "35", "RB": "88", "SG": "46" },
@@ -31,29 +31,29 @@ const BACKUP_DATABASE = {
       "06": { "AK": "98", "DB": "29", "DS": "59", "FB": "01", "GL": "53", "GZ": "38", "HK": "94", "HN": "44", "RB": "59", "SG": "27" },
       "07": { "AK": "96", "DB": "06", "DS": "23", "FB": "87", "GL": "29", "GZ": "84", "HK": "43", "HN": "21", "RB": "55", "SG": "89" },
       "08": { "AK": "12", "DB": "07", "DS": "90", "FB": "92", "GL": "62", "GZ": "74", "HK": "00", "HN": "27", "RB": "13", "SG": "02" },
-      "09": { "AK": "12", "DB": "07", "DS": "26", "FB": "92", "GL": "62", "GZ": "74", "HK": "96", "HN": "27", "RB": "13", "SG": "02" }
+      "09": { "DS": "26", "HK": "96", "AK": "XX", "DB": "XX", "FB": "XX", "GL": "XX", "GZ": "XX", "HN": "XX", "RB": "XX", "SG": "XX" }
     },
     "09": {
-      "01": { "DB": "58", "SG": "89", "FB": "45", "GZ": "86", "GL": "81", "DS": "XX" },
-      "02": { "DB": "52", "SG": "54", "FB": "19", "GZ": "85", "GL": "96", "DS": "69" },
-      "03": { "DB": "88", "SG": "20", "FB": "08", "GZ": "32", "GL": "77", "DS": "57" },
-      "04": { "DB": "18", "SG": "01", "FB": "02", "GZ": "95", "GL": "26", "DS": "95" },
-      "05": { "DB": "44", "SG": "02", "FB": "30", "GZ": "68", "GL": "37", "DS": "59" },
-      "06": { "DB": "71", "SG": "25", "FB": "88", "GZ": "69", "GL": "94", "DS": "78" },
-      "07": { "DB": "61", "SG": "17", "FB": "02", "GZ": "02", "GL": "10", "DS": "67" },
-      "08": { "DB": "84", "SG": "83", "FB": "71", "GZ": "93", "GL": "64", "DS": "92" },
-      "09": { "DB": "18", "SG": "15", "FB": "29", "GZ": "93", "GL": "69", "DS": "54" },
-      "10": { "DB": "52", "SG": "12", "FB": "15", "GZ": "72", "GL": "40", "DS": "93" },
-      "11": { "DB": "59", "SG": "32", "FB": "72", "GZ": "98", "GL": "34", "DS": "40" },
-      "12": { "DB": "81", "SG": "42", "FB": "65", "GZ": "16", "GL": "35", "DS": "46" },
-      "13": { "DB": "55", "SG": "48", "FB": "74", "GZ": "47", "GL": "72", "DS": "02" },
-      "14": { "DB": "86", "SG": "34", "FB": "30", "GZ": "50", "GL": "87", "DS": "35" },
-      "15": { "DB": "46", "SG": "28", "FB": "24", "GZ": "19", "GL": "83", "DS": "89" },
-      "16": { "DB": "68", "SG": "94", "FB": "21", "GZ": "42", "GL": "91", "DS": "31" },
-      "17": { "DB": "99", "SG": "50", "FB": "38", "GZ": "34", "GL": "73", "DS": "90" },
-      "18": { "DB": "84", "SG": "38", "FB": "36", "GZ": "03", "GL": "50", "DS": "49" },
-      "19": { "DB": "24", "SG": "20", "FB": "21", "GZ": "86", "GL": "07", "DS": "35" },
-      "20": { "DB": "47", "SG": "80", "FB": "84", "GZ": "24", "GL": "66", "DS": "32" },
+      "01": { "AK": "15", "DB": "58", "DS": "43", "FB": "45", "GL": "81", "GZ": "86", "HK": "88", "HN": "76", "RB": "98", "SG": "89" },
+      "02": { "AK": "94", "DB": "52", "DS": "69", "FB": "19", "GL": "96", "GZ": "85", "HK": "01", "HN": "11", "RB": "75", "SG": "54" },
+      "03": { "AK": "88", "DB": "88", "DS": "57", "FB": "08", "GL": "77", "GZ": "32", "HK": "80", "HN": "55", "RB": "56", "SG": "20" },
+      "04": { "AK": "77", "DB": "18", "DS": "95", "FB": "02", "GL": "26", "GZ": "95", "HK": "67", "HN": "35", "RB": "88", "SG": "01" },
+      "05": { "AK": "44", "DB": "44", "DS": "59", "FB": "30", "GL": "37", "GZ": "68", "HK": "58", "HN": "36", "RB": "21", "SG": "02" },
+      "06": { "AK": "98", "DB": "71", "DS": "78", "FB": "88", "GL": "94", "GZ": "69", "HK": "94", "HN": "44", "RB": "59", "SG": "25" },
+      "07": { "AK": "96", "DB": "61", "DS": "67", "FB": "02", "GL": "10", "GZ": "02", "HK": "43", "HN": "21", "RB": "55", "SG": "17" },
+      "08": { "AK": "12", "DB": "84", "DS": "92", "FB": "71", "GL": "64", "GZ": "93", "HK": "00", "HN": "27", "RB": "13", "SG": "83" },
+      "09": { "AK": "12", "DB": "18", "DS": "54", "FB": "29", "GL": "69", "GZ": "93", "HK": "96", "HN": "27", "RB": "13", "SG": "15" },
+      "10": { "AK": "12", "DB": "52", "DS": "93", "FB": "15", "GL": "40", "GZ": "72", "HK": "96", "HN": "27", "RB": "13", "SG": "12" },
+      "11": { "AK": "12", "DB": "59", "DS": "40", "FB": "72", "GL": "34", "GZ": "98", "HK": "96", "HN": "27", "RB": "13", "SG": "32" },
+      "12": { "AK": "12", "DB": "81", "DS": "46", "FB": "65", "GL": "35", "GZ": "16", "HK": "96", "HN": "27", "RB": "13", "SG": "42" },
+      "13": { "AK": "12", "DB": "55", "DS": "02", "FB": "74", "GL": "72", "GZ": "47", "HK": "96", "HN": "27", "RB": "13", "SG": "48" },
+      "14": { "AK": "12", "DB": "86", "DS": "35", "FB": "30", "GL": "87", "GZ": "50", "HK": "96", "HN": "27", "RB": "13", "SG": "34" },
+      "15": { "AK": "12", "DB": "46", "DS": "89", "FB": "24", "GL": "83", "GZ": "19", "HK": "96", "HN": "27", "RB": "13", "SG": "28" },
+      "16": { "AK": "12", "DB": "68", "DS": "31", "FB": "21", "GL": "91", "GZ": "42", "HK": "96", "HN": "27", "RB": "13", "SG": "94" },
+      "17": { "AK": "12", "DB": "99", "DS": "90", "FB": "38", "GL": "73", "GZ": "34", "HK": "96", "HN": "27", "RB": "13", "SG": "50" },
+      "18": { "AK": "12", "DB": "84", "DS": "49", "FB": "36", "GL": "50", "GZ": "03", "HK": "96", "HN": "27", "RB": "13", "SG": "38" },
+      "19": { "AK": "12", "DB": "24", "DS": "35", "FB": "21", "GL": "07", "GZ": "86", "HK": "96", "HN": "27", "RB": "13", "SG": "20" },
+      "20": { "AK": "12", "DB": "47", "DS": "32", "FB": "84", "GL": "66", "GZ": "24", "HK": "96", "HN": "27", "RB": "13", "SG": "80" },
       "21": { "AK": "94", "DB": "62", "DS": "01", "FB": "71", "GL": "32", "GZ": "70", "HK": "27", "HN": "08", "RB": "87", "SG": "08" },
       "22": { "AK": "94", "DB": "03", "DS": "73", "FB": "42", "GL": "00", "GZ": "50", "HK": "01", "HN": "11", "RB": "98", "SG": "98" },
       "23": { "AK": "69", "DB": "92", "DS": "35", "FB": "00", "GL": "02", "GZ": "42", "HK": "10", "HN": "15", "RB": "29", "SG": "10" },
@@ -68,7 +68,6 @@ const BACKUP_DATABASE = {
   }
 };
 
-// ⏰ Reliable IST Date Helpers (UTC+05:30)
 function getISTDateObj() {
   const now = new Date();
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -86,7 +85,6 @@ function getISTDateString() {
 
 function generateFullDemoResults() {
   const results = [];
-  let idCount = 1;
 
   const marketCodeMap = {
     'DS': 'disawar',
@@ -128,7 +126,7 @@ function generateFullDemoResults() {
           resultDate: dateStr,
           resultTime: m.resultTime,
           status: val === 'XX' ? 'PENDING' : 'UPDATED',
-          isSecret: val === 'XX',
+          isSecret: false,
           showInstantly: val !== 'XX',
           year: 2026,
           month: monthNum,
@@ -148,9 +146,8 @@ class DataEngine {
     this.initFirebaseSync();
   }
 
-  // 🚀 Dataset Version Force-Reload to load all imported 2026 backup historical results
   init() {
-    const CURRENT_DATA_VERSION = 'v2026_full_backup_v5';
+    const CURRENT_DATA_VERSION = 'v2026_60min_new_badge_v32';
     localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
 
     if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION) {
@@ -160,9 +157,9 @@ class DataEngine {
 
       if (this.db) {
         try {
-          freshData.forEach(item => {
-            this.db.ref(`fastsatta/results/${item.id}`).set(item);
-          });
+          const cloudObj = {};
+          freshData.forEach(item => { cloudObj[item.id] = item; });
+          this.db.ref('fastsatta/results').set(cloudObj);
         } catch(e) {}
       }
     }
@@ -172,7 +169,6 @@ class DataEngine {
     }
   }
 
-  // 🔥 Firebase Realtime Cloud Sync
   initFirebaseSync() {
     if (typeof firebase !== 'undefined' && firebase.database) {
       try {
@@ -309,6 +305,7 @@ class DataEngine {
     return false;
   }
 
+  // 🎯 60-Minute Dynamic "NEW ⚡" Badge Duration Rule
   getTodaySummaryDynamic(todayDate = null, yesterdayDate = null) {
     const istDateStr = getISTDateString();
     if (!todayDate) todayDate = istDateStr;
@@ -322,7 +319,8 @@ class DataEngine {
     const markets = this.getMarkets();
     const allResults = this.getResults();
 
-    const nowMinutes = getISTDateObj().getHours() * 60 + getISTDateObj().getMinutes();
+    const istNow = getISTDateObj();
+    const nowMinutes = istNow.getHours() * 60 + istNow.getMinutes();
 
     const summaryList = markets.map(m => {
       let t = allResults.find(r => r.marketId === m.id && r.resultDate === todayDate);
@@ -343,27 +341,38 @@ class DataEngine {
         }
       }
 
+      const isTodayDeclared = (t && t.resultValue && t.resultValue !== 'XX' && t.resultDate === todayDate);
+
+      // Check publish age in minutes (60-minute highlight duration)
+      const updatedAtMs = (t && t.updatedAt) ? new Date(t.updatedAt).getTime() : 0;
+      const ageMinutes = (istNow.getTime() - updatedAtMs) / (1000 * 60);
+
       let badge = 'NONE';
       let priorityScore = 100;
+      let isNextUpcoming = false;
       let isFreshNew = false;
 
-      if (t) {
-        if (t.status === 'LIVE' || t.status === 'UPDATED') {
-          badge = 'LIVE ⚡';
-          priorityScore = 10;
-          isFreshNew = true;
-        } else if (t.status === 'PENDING' || t.isSecret) {
-          badge = 'WAITING ⏳';
-          priorityScore = 20;
-        }
+      const timeDiff = m.timeMinutes - nowMinutes;
+
+      // RULE 1: Draw time in next 30 minutes AND result pending -> "NEXT ⏳"
+      if (!isTodayDeclared && timeDiff >= -5 && timeDiff <= 30) {
+        badge = 'NEXT ⏳';
+        priorityScore = 10;
+        isNextUpcoming = true;
+      }
+      // RULE 2: Result Declared Today AND published within last 60 minutes -> "NEW ⚡"
+      else if (isTodayDeclared && (ageMinutes <= 60 || !t.updatedAt)) {
+        badge = 'NEW ⚡';
+        priorityScore = 20; // High priority top highlight for 1 hour!
+        isFreshNew = true;
+      }
+      // RULE 3: Regular pending or declared market
+      else if (!isTodayDeclared) {
+        badge = 'NONE';
+        priorityScore = 50;
       } else {
-        const timeDiff = m.timeMinutes - nowMinutes;
-        if (timeDiff > 0 && timeDiff <= 60) {
-          priorityScore = 15;
-          badge = 'WAITING ⏳';
-        } else {
-          priorityScore = 40;
-        }
+        badge = 'NONE';
+        priorityScore = 80;
       }
 
       return {
@@ -377,15 +386,16 @@ class DataEngine {
         category: m.category,
         priorityScore: priorityScore,
         badge: badge,
+        isNextUpcoming: isNextUpcoming,
         isFreshNew: isFreshNew,
-        todayValue: (t && t.resultValue && t.resultValue !== '') ? t.resultValue : 'XX',
+        todayValue: isTodayDeclared ? t.resultValue : 'XX',
         yesterdayValue: (y && y.resultValue && y.resultValue !== '') ? y.resultValue : (t && t.yesterdayValue ? t.yesterdayValue : 'XX'),
-        isSecret: t ? !!t.isSecret : false,
+        isSecret: false,
         showInstantly: t ? !!t.showInstantly : true,
         patti: t ? t.patti : null,
-        todayDate: t ? t.resultDate : todayDate,
-        yesterdayDate: y ? y.resultDate : yesterdayDate,
-        status: t ? t.status : 'PENDING',
+        todayDate: todayDate,
+        yesterdayDate: yesterdayDate,
+        status: isTodayDeclared ? 'UPDATED' : 'PENDING',
       };
     });
 
@@ -423,7 +433,7 @@ class DataEngine {
           return;
         }
 
-        const match = allResults.find(r => r.slug === slug && r.year === year && r.month === month && r.day === day);
+        const match = allResults.find(r => r.slug === slug && r.resultDate === dateStr);
         if (match && match.resultValue && match.resultValue !== '') {
           dayData.values[slug] = match.resultValue;
         } else {

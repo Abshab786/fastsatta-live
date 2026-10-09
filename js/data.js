@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Force Rebuild & Multi-Field Slug Fallback
+// Fastsatta.live - Market & Chart Data Engine with Perfect 24-Hour Card Rotation
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -146,13 +146,11 @@ class DataEngine {
     this.initFirebaseSync();
   }
 
-  // 🚀 Force Rebuild Check: Guarantees 200+ Records in LocalStorage & Firebase Cloud
   init() {
-    const CURRENT_DATA_VERSION = 'v2026_force_rebuild_v100';
+    const CURRENT_DATA_VERSION = 'v2026_perfect_card_rotation_v40';
     localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
 
-    const existingResults = this.getResults();
-    if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION || existingResults.length < 50) {
+    if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION) {
       const freshData = generateFullDemoResults();
       localStorage.setItem('fastsatta_results', JSON.stringify(freshData));
       localStorage.setItem('fastsatta_data_version', CURRENT_DATA_VERSION);
@@ -171,7 +169,6 @@ class DataEngine {
     }
   }
 
-  // 🔥 Firebase Realtime Cloud Sync
   initFirebaseSync() {
     if (typeof firebase !== 'undefined' && firebase.database) {
       try {
@@ -308,6 +305,7 @@ class DataEngine {
     return false;
   }
 
+  // 🎯 Perfect 24-Hour Card Rotation Algorithm
   getTodaySummaryDynamic(todayDate = null, yesterdayDate = null) {
     const istDateStr = getISTDateString();
     if (!todayDate) todayDate = istDateStr;
@@ -343,37 +341,46 @@ class DataEngine {
         }
       }
 
+      // STRICT CHECK: Is the result declared for TODAY's date?
       const isTodayDeclared = (t && t.resultValue && t.resultValue !== 'XX' && t.resultDate === todayDate);
 
+      // Check age in minutes since publication
       const updatedAtMs = (t && t.updatedAt) ? new Date(t.updatedAt).getTime() : 0;
       const ageMinutes = (istNow.getTime() - updatedAtMs) / (1000 * 60);
+
+      const timeDiff = m.timeMinutes - nowMinutes;
 
       let badge = 'NONE';
       let priorityScore = 100;
       let isNextUpcoming = false;
       let isFreshNew = false;
 
-      const timeDiff = m.timeMinutes - nowMinutes;
-
-      // RULE 1: Draw time in next 30 minutes AND result pending -> "NEXT ⏳"
+      // 🥇 TIER 1: Result NOT declared today AND draw time is coming up in next 30 minutes -> "NEXT ⏳" (FLOATS TO TOP #1!)
       if (!isTodayDeclared && timeDiff >= -5 && timeDiff <= 30) {
         badge = 'NEXT ⏳';
         priorityScore = 10;
         isNextUpcoming = true;
       }
-      // RULE 2: Result Declared Today AND published within last 60 minutes -> "NEW ⚡"
+      // 🥈 TIER 2: Result WAS Declared Today AND updated within last 60 minutes -> "NEW ⚡" (FLOATS TO #2 RIGHT BELOW NEXT!)
       else if (isTodayDeclared && (ageMinutes <= 60 || !t.updatedAt)) {
         badge = 'NEW ⚡';
         priorityScore = 20;
         isFreshNew = true;
       }
-      // RULE 3: Regular pending or declared market
+      // 🥉 TIER 3: Result pending & upcoming later today -> Ordered by upcoming draw time!
+      else if (!isTodayDeclared && timeDiff > 30) {
+        badge = 'NONE';
+        priorityScore = 30 + timeDiff;
+      }
+      // 🏅 TIER 4: Result pending & draw time passed earlier today
       else if (!isTodayDeclared) {
         badge = 'NONE';
-        priorityScore = 50;
-      } else {
+        priorityScore = 50 + (1440 + timeDiff);
+      }
+      // 🏅 TIER 5: Declared earlier today
+      else {
         badge = 'NONE';
-        priorityScore = 80;
+        priorityScore = 100 + m.timeMinutes;
       }
 
       return {

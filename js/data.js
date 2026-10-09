@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with 60-Minute NEW Badge Highlight Rule
+// Fastsatta.live - Market & Chart Data Engine with Force Rebuild & Multi-Field Slug Fallback
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -146,11 +146,13 @@ class DataEngine {
     this.initFirebaseSync();
   }
 
+  // 🚀 Force Rebuild Check: Guarantees 200+ Records in LocalStorage & Firebase Cloud
   init() {
-    const CURRENT_DATA_VERSION = 'v2026_60min_new_badge_v32';
+    const CURRENT_DATA_VERSION = 'v2026_force_rebuild_v100';
     localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
 
-    if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION) {
+    const existingResults = this.getResults();
+    if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION || existingResults.length < 50) {
       const freshData = generateFullDemoResults();
       localStorage.setItem('fastsatta_results', JSON.stringify(freshData));
       localStorage.setItem('fastsatta_data_version', CURRENT_DATA_VERSION);
@@ -169,6 +171,7 @@ class DataEngine {
     }
   }
 
+  // 🔥 Firebase Realtime Cloud Sync
   initFirebaseSync() {
     if (typeof firebase !== 'undefined' && firebase.database) {
       try {
@@ -305,7 +308,6 @@ class DataEngine {
     return false;
   }
 
-  // 🎯 60-Minute Dynamic "NEW ⚡" Badge Duration Rule
   getTodaySummaryDynamic(todayDate = null, yesterdayDate = null) {
     const istDateStr = getISTDateString();
     if (!todayDate) todayDate = istDateStr;
@@ -343,7 +345,6 @@ class DataEngine {
 
       const isTodayDeclared = (t && t.resultValue && t.resultValue !== 'XX' && t.resultDate === todayDate);
 
-      // Check publish age in minutes (60-minute highlight duration)
       const updatedAtMs = (t && t.updatedAt) ? new Date(t.updatedAt).getTime() : 0;
       const ageMinutes = (istNow.getTime() - updatedAtMs) / (1000 * 60);
 
@@ -363,7 +364,7 @@ class DataEngine {
       // RULE 2: Result Declared Today AND published within last 60 minutes -> "NEW ⚡"
       else if (isTodayDeclared && (ageMinutes <= 60 || !t.updatedAt)) {
         badge = 'NEW ⚡';
-        priorityScore = 20; // High priority top highlight for 1 hour!
+        priorityScore = 20;
         isFreshNew = true;
       }
       // RULE 3: Regular pending or declared market

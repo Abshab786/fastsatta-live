@@ -3,6 +3,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBK5Toa7whB9P9leaxDrXTHuhCEm5KdvtM",
   authDomain: "fastsatta-live.firebaseapp.com",
+  databaseURL: "https://fastsatta-live-default-rtdb.firebaseio.com",
   projectId: "fastsatta-live",
   storageBucket: "fastsatta-live.firebasestorage.app",
   messagingSenderId: "914026110185",
@@ -14,5 +15,5 @@ const firebaseConfig = {
 if (typeof firebase !== 'undefined') {
   firebase.initializeApp(firebaseConfig);
   if (firebase.analytics) firebase.analytics();
-  console.log("🔥 Firebase initialized successfully for fastsatta-live!");
+  console.log("🔥 Firebase Realtime Database connected successfully for fastsatta-live!");
 }

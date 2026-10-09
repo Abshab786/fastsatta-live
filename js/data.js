@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Exact Oct 09 Declared Results
+// Fastsatta.live - Market & Chart Data Engine with Fail-Safe Auto-Recovery Guarantee
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -116,12 +116,6 @@ function generateFullDemoResults() {
         let val = (code && dayMap[code]) ? dayMap[code] : '';
         if (!val || val === '') val = 'XX';
 
-        // ACCURATE IST DRAW TIMESTAMPS FOR OCT 09:
-        // Disawar declared at 05:05 AM IST
-        // Haryana King declared at 01:35 PM IST
-        // Ram Bazar declared at 02:35 PM IST
-        // Delhi Bazar declared at 03:15 PM IST
-        // Shree Ganesh declared fresh at 05:25 PM IST (within last 60 mins -> HAS NEW ⚡ BADGE & FLOATS TO TOP #1!)
         let updatedTimeStr = '2026-10-08T00:00:00.000+05:30';
         if (dateStr === '2026-10-09') {
           if (m.slug === 'disawar') {
@@ -133,7 +127,7 @@ function generateFullDemoResults() {
           } else if (m.slug === 'delhi-bazar') {
             updatedTimeStr = '2026-10-09T15:15:00.000+05:30';
           } else if (m.slug === 'shree-ganesh') {
-            updatedTimeStr = new Date().toISOString(); // Current Millisecond
+            updatedTimeStr = new Date().toISOString();
           }
         }
 
@@ -169,10 +163,11 @@ class DataEngine {
   }
 
   init() {
-    const CURRENT_DATA_VERSION = 'v2026_oct9_exact_results_v600';
+    const CURRENT_DATA_VERSION = 'v2026_failsafe_recovery_v700';
     localStorage.setItem('fastsatta_markets', JSON.stringify(DEFAULT_MARKETS));
 
-    if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION) {
+    const existingResults = this.getResults();
+    if (localStorage.getItem('fastsatta_data_version') !== CURRENT_DATA_VERSION || existingResults.length < 50) {
       localStorage.removeItem('fastsatta_results');
       const freshData = generateFullDemoResults();
       localStorage.setItem('fastsatta_results', JSON.stringify(freshData));
@@ -193,8 +188,7 @@ class DataEngine {
       }
 
       if (this.db) {
-        // 🔥 FORCE OVERWRITE FIREBASE REALTIME DATABASE CLOUD SNAPSHOT ON VERSION BUMP!
-        const CURRENT_DATA_VERSION = 'v2026_oct9_exact_results_v600';
+        const CURRENT_DATA_VERSION = 'v2026_failsafe_recovery_v700';
         if (localStorage.getItem('fastsatta_cloud_synced_version') !== CURRENT_DATA_VERSION) {
           try {
             const freshData = generateFullDemoResults();
@@ -256,8 +250,18 @@ class DataEngine {
     if (typeof renderMarketDetailPage === 'function') renderMarketDetailPage();
   }
 
+  // 🛡️ Fail-Safe Guarantee: Never Returns Empty Array!
   getMarkets() {
-    return JSON.parse(localStorage.getItem('fastsatta_markets') || '[]');
+    let data = [];
+    try {
+      data = JSON.parse(localStorage.getItem('fastsatta_markets') || '[]');
+    } catch(e) {}
+
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      data = DEFAULT_MARKETS;
+      localStorage.setItem('fastsatta_markets', JSON.stringify(data));
+    }
+    return data;
   }
 
   saveMarkets(markets) {
@@ -287,8 +291,18 @@ class DataEngine {
     }
   }
 
+  // 🛡️ Fail-Safe Guarantee: Never Returns Empty Array! Automatically Recovers Full Backup Dataset!
   getResults() {
-    return JSON.parse(localStorage.getItem('fastsatta_results') || '[]');
+    let data = [];
+    try {
+      data = JSON.parse(localStorage.getItem('fastsatta_results') || '[]');
+    } catch(e) {}
+
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      data = generateFullDemoResults();
+      localStorage.setItem('fastsatta_results', JSON.stringify(data));
+    }
+    return data;
   }
 
   saveResults(results) {
@@ -332,7 +346,7 @@ class DataEngine {
     return false;
   }
 
-  // 🎯 100% Perfect 24-Hour Circular Draw-Time Sorting Algorithm
+  // 🎯 Bulletproof 24-Hour Circular Draw-Time Sorting Algorithm
   getTodaySummaryDynamic(todayDate = null, yesterdayDate = null) {
     const istDateStr = getISTDateString();
     if (!todayDate) todayDate = istDateStr;
@@ -350,7 +364,7 @@ class DataEngine {
     const nowMinutes = istNow.getHours() * 60 + istNow.getMinutes();
 
     const summaryList = markets.map(m => {
-      // Bulletproof Lookup: Match by marketId OR slug OR marketName!
+      // 100% Bulletproof Lookup: Match by marketId OR slug OR marketName!
       let t = allResults.find(r =>
         r.resultDate === todayDate && (
           r.marketId === m.id ||

@@ -1,22 +1,22 @@
-// Fastsatta.live Main UI Script with Compact DD-MM-YY Date Format for Mobile
+// Fastsatta.live Main UI Script with Bulletproof Router & Title Matcher
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
   startLiveTimestampClock();
   updateDynamicSEOMetadata();
 
-  // Route-based initialization for ALL pages
+  // Bulletproof Route-based initialization for ALL pages (using includes for query param compatibility)
   const path = window.location.pathname.toLowerCase();
 
-  if (path.endsWith('today.html')) {
+  if (path.includes('today.html')) {
     renderTodayPage();
-  } else if (path.endsWith('record-chart.html')) {
+  } else if (path.includes('record-chart.html')) {
     renderRecordChartPage();
-  } else if (path.endsWith('results.html')) {
+  } else if (path.includes('results.html')) {
     renderResultsPage();
-  } else if (path.endsWith('history.html')) {
+  } else if (path.includes('history.html')) {
     renderHistoryPage();
-  } else if (path.endsWith('result-detail.html')) {
+  } else if (path.includes('result-detail.html')) {
     renderMarketDetailPage();
   } else {
     renderHomePage();
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const curPath = window.location.pathname.toLowerCase();
     if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
       renderHomePage();
-    } else if (curPath.endsWith('today.html')) {
+    } else if (curPath.includes('today.html')) {
       renderTodayPage();
     }
   }, 10000);
@@ -37,15 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('storage', (e) => {
   if (e.key === 'fastsatta_results' || e.key === 'fastsatta_markets' || e.key === 'fastsatta_settings') {
     const curPath = window.location.pathname.toLowerCase();
-    if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
+    if (curPath.includes('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
       renderHomePage();
-    } else if (curPath.endsWith('today.html')) {
+    } else if (curPath.includes('today.html')) {
       renderTodayPage();
-    } else if (curPath.endsWith('record-chart.html')) {
+    } else if (curPath.includes('record-chart.html')) {
       renderRecordChartPage();
-    } else if (curPath.endsWith('results.html')) {
+    } else if (curPath.includes('results.html')) {
       renderResultsPage();
-    } else if (curPath.endsWith('result-detail.html')) {
+    } else if (curPath.includes('history.html')) {
+      renderHistoryPage();
+    } else if (curPath.includes('result-detail.html')) {
       renderMarketDetailPage();
     }
   }
@@ -56,10 +58,10 @@ function formatDisplayDate(dateStr) {
   if (!dateStr || dateStr.length < 10) return dateStr;
   const parts = dateStr.split('-');
   if (parts.length === 3) {
-    const yearShort = parts[0].slice(2); // "2026" -> "26"
-    const month = parts[1]; // "10"
-    const day = parts[2]; // "09"
-    return `${day}-${month}-${yearShort}`; // "09-10-26"
+    const yearShort = parts[0].slice(2);
+    const month = parts[1];
+    const day = parts[2];
+    return `${day}-${month}-${yearShort}`;
   }
   return dateStr;
 }
@@ -121,12 +123,12 @@ function updateDynamicSEOMetadata() {
   let pageTitle = `Satta King Result of ${istFullDate} | FastSatta.live`;
   let metaDescription = `Get superfast Satta King live result updates of ${istFullDate} for Disawar, Faridabad, Gaziyabad, Gali, Shree Ganesh, Delhi Bazar on FastSatta.live.`;
 
-  if (path.endsWith('today.html')) {
+  if (path.includes('today.html')) {
     pageTitle = `Today Satta King Result (${istFullDate}) | FastSatta.live`;
     metaDescription = `Today's superfast Satta King live results for ${istFullDate}. Check Disawar, Faridabad, Gaziyabad, Gali live result numbers instantly.`;
-  } else if (path.endsWith('results.html')) {
+  } else if (path.includes('results.html') || path.includes('history.html')) {
     pageTitle = `All Satta King Results Archive ${getISTDateObj().getFullYear()} | FastSatta.live`;
-  } else if (path.endsWith('record-chart.html')) {
+  } else if (path.includes('record-chart.html')) {
     pageTitle = `Satta King Record Chart ${getISTDateObj().getFullYear()} — Monthly & Yearly | FastSatta.live`;
   }
 
@@ -316,7 +318,7 @@ function renderTodayPage() {
   renderHomePage();
 }
 
-// Page 3: Record Chart Page (Compact DD-MM-YY Date Format)
+// Page 3: Record Chart Page (Robust Dynamic Market Title Matcher)
 function renderRecordChartPage() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug') || 'disawar';
@@ -330,7 +332,7 @@ function renderRecordChartPage() {
   if (select && window.dataEngine) {
     const markets = window.dataEngine.getMarkets();
     select.innerHTML = markets.map(m => `
-      <option value="${m.slug}" ${m.slug === slug ? 'selected' : ''}>${m.name} (${m.resultTime})</option>
+      <option value="${m.slug}" ${m.slug.toLowerCase() === slug.toLowerCase() ? 'selected' : ''}>${m.name} (${m.resultTime})</option>
     `).join('');
 
     select.addEventListener('change', (e) => {
@@ -338,14 +340,19 @@ function renderRecordChartPage() {
     });
   }
 
-  if (title && window.dataEngine) {
-    const active = window.dataEngine.getMarkets().find(m => m.slug === slug);
-    title.innerText = `${active ? active.name : 'MARKET'} RECORD CHART ${year}`;
+  // Robust Dynamic Market Record Chart Title Update
+  if (title) {
+    let activeName = slug.replace('-', ' ').toUpperCase();
+    if (window.dataEngine) {
+      const active = window.dataEngine.getMarkets().find(m => m.slug.toLowerCase() === slug.toLowerCase());
+      if (active) activeName = active.name;
+    }
+    title.innerText = `${activeName} RECORD CHART ${year}`;
   }
 
   if (tableBody && window.dataEngine) {
     const results = window.dataEngine.getResults()
-      .filter(r => r.slug === slug)
+      .filter(r => r.slug.toLowerCase() === slug.toLowerCase())
       .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
 
     if (results.length === 0) {
@@ -365,7 +372,7 @@ function renderRecordChartPage() {
   syncSocialSettings();
 }
 
-// Page 4: All Results Search Page (Compact DD-MM-YY Date Format)
+// Page 4: All Results Search Page (100% Mobile Responsive Table Rows)
 function renderResultsPage() {
   const container = document.getElementById('results-list-table-body');
   const input = document.getElementById('results-search-input');
@@ -385,12 +392,14 @@ function renderResultsPage() {
       } else {
         container.innerHTML = results.slice(0, 100).map(r => `
           <tr>
-            <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base">${r.marketName}</td>
-            <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700">${r.resultValue}</td>
-            <td class="text-center text-slate-800 text-xs font-bold">${formatDisplayDate(r.resultDate)}</td>
-            <td class="text-center text-slate-800 text-xs font-bold">${r.resultTime}</td>
-            <td class="text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
-            <td class="text-right"><a href="result-detail.html?slug=${r.slug}" class="chart-button-yellow text-xs inline-block px-2.5 py-1">Details &rarr;</a></td>
+            <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base px-2 py-2.5">
+              <a href="result-detail.html?slug=${r.slug}">${r.marketName}</a>
+            </td>
+            <td class="text-center font-mono font-black text-lg sm:text-2xl text-emerald-700 px-1 py-2.5">${r.resultValue}</td>
+            <td class="text-center text-slate-800 text-[11px] sm:text-xs font-bold px-1 py-2.5">${formatDisplayDate(r.resultDate)}</td>
+            <td class="text-center text-slate-800 text-xs font-bold hidden sm:table-cell px-2 py-2.5">${r.resultTime}</td>
+            <td class="text-center hidden sm:table-cell px-1 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
+            <td class="text-right px-2 py-2.5"><a href="record-chart.html?slug=${r.slug}" class="chart-button-yellow text-[10px] sm:text-xs inline-block px-2 py-1">Chart &rarr;</a></td>
           </tr>
         `).join('');
       }
@@ -407,27 +416,34 @@ function renderHistoryPage() {
   renderResultsPage();
 }
 
-// Page 6: Market Specific Detail Page (Compact DD-MM-YY Date Format)
+// Page 6: Market Specific Detail Page
 function renderMarketDetailPage() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug') || 'disawar';
-  const market = window.dataEngine.getMarkets().find(m => m.slug === slug);
 
-  if (market) {
-    const title = document.getElementById('detail-market-title');
-    const time = document.getElementById('detail-market-time');
-    const val = document.getElementById('detail-market-value');
+  const title = document.getElementById('detail-market-title');
+  const time = document.getElementById('detail-market-time');
+  const val = document.getElementById('detail-market-value');
 
-    if (title) title.innerText = market.name;
-    if (time) time.innerText = `Daily Result Time: ${market.resultTime}`;
+  let market = null;
+  if (window.dataEngine) {
+    market = window.dataEngine.getMarkets().find(m => m.slug.toLowerCase() === slug.toLowerCase());
+  }
 
-    const todayRes = window.dataEngine.getResults().find(r => r.slug === slug && r.resultDate === getISTDateString());
+  const marketName = market ? market.name : slug.replace('-', ' ').toUpperCase();
+  const marketTime = market ? market.resultTime : '12:00 PM';
+
+  if (title) title.innerText = marketName;
+  if (time) time.innerText = `Daily Result Time: ${marketTime}`;
+
+  if (window.dataEngine) {
+    const todayRes = window.dataEngine.getResults().find(r => r.slug.toLowerCase() === slug.toLowerCase() && r.resultDate === getISTDateString());
     if (val) val.innerText = todayRes ? todayRes.resultValue : 'XX';
 
     const historyTable = document.getElementById('detail-history-table');
     if (historyTable) {
       const history = window.dataEngine.getResults()
-        .filter(r => r.slug === slug)
+        .filter(r => r.slug.toLowerCase() === slug.toLowerCase())
         .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
 
       if (history.length === 0) {
@@ -435,12 +451,12 @@ function renderMarketDetailPage() {
       } else {
         historyTable.innerHTML = history.map(r => `
           <tr>
-            <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base">${r.marketName}</td>
-            <td class="text-center font-mono font-black text-xl sm:text-2xl text-emerald-700">${r.resultValue}</td>
-            <td class="text-center text-slate-800 text-xs font-bold">${formatDisplayDate(r.resultDate)}</td>
-            <td class="text-center text-slate-800 text-xs font-bold">${r.resultTime}</td>
-            <td class="text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
-            <td class="text-right"><a href="record-chart.html?slug=${r.slug}" class="chart-button-yellow text-xs inline-block px-2.5 py-1">Chart &rarr;</a></td>
+            <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base px-2 py-2.5">${r.marketName}</td>
+            <td class="text-center font-mono font-black text-lg sm:text-2xl text-emerald-700 px-1 py-2.5">${r.resultValue}</td>
+            <td class="text-center text-slate-800 text-[11px] sm:text-xs font-bold px-1 py-2.5">${formatDisplayDate(r.resultDate)}</td>
+            <td class="text-center text-slate-800 text-xs font-bold hidden sm:table-cell px-2 py-2.5">${r.resultTime}</td>
+            <td class="text-center hidden sm:table-cell px-1 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
+            <td class="text-right px-2 py-2.5"><a href="record-chart.html?slug=${r.slug}" class="chart-button-yellow text-[10px] sm:text-xs inline-block px-2 py-1">Chart &rarr;</a></td>
           </tr>
         `).join('');
       }

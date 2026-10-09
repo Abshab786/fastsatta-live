@@ -1,4 +1,4 @@
-// Fastsatta.live Main UI Script with 100% Dynamic Auto-Updating Month Banners
+// Fastsatta.live Main UI Script with Fixed curYear/curMonth References
 
 document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenu();
@@ -191,7 +191,7 @@ function formatMixChartCell(val, colorClass) {
   return `<span class="font-mono font-black ${colorClass} text-base sm:text-lg">${val}</span>`;
 }
 
-// Page 1: Homepage Renderer (With Dynamic Month/Year Banners)
+// Page 1: Homepage Renderer (With Fixed curYear/curMonth Declarations)
 function renderHomePage() {
   const cardsContainer = document.getElementById('today-cards-container');
   const summaryTableBody = document.getElementById('summary-table-body');
@@ -202,6 +202,8 @@ function renderHomePage() {
 
   const todayDateObj = getISTDateObj();
   const todayDateStr = getISTDateString();
+  const curYear = todayDateObj.getFullYear();
+  const curMonth = todayDateObj.getMonth() + 1;
 
   const yDateObj = getISTDateObj();
   yDateObj.setDate(yDateObj.getDate() - 1);

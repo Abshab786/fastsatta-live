@@ -1,4 +1,4 @@
-// Fastsatta.live - Market & Chart Data Engine with Firebase Cloud Sync
+// Fastsatta.live - Market & Chart Data Engine with Robust Admin Result Sync
 
 const DEFAULT_MARKETS = [
   { id: 'm1', name: 'DISAWAR', slug: 'disawar', resultTime: '05:00 AM', openTime: '03:00 AM', closeTime: '04:30 AM', category: 'DESAWAR', timeMinutes: 300, order: 1 },
@@ -89,7 +89,7 @@ function generateFullDemoResults() {
       }
 
       results.push({
-        id: `res-${idCount++}`,
+        id: `res-${m.id}-${dateStr}`,
         marketId: m.id,
         marketName: m.name,
         slug: m.slug,
@@ -137,7 +137,7 @@ function generateFullDemoResults() {
       }
 
       results.push({
-        id: `res-${idCount++}`,
+        id: `res-${m.id}-${dateStr}`,
         marketId: m.id,
         marketName: m.name,
         slug: m.slug,
@@ -181,26 +181,23 @@ class DataEngine {
     if (typeof firebase !== 'undefined' && firebase.database) {
       this.db = firebase.database();
 
-      // Listen for live results changes from Firebase Cloud
       this.db.ref('fastsatta/results').on('value', (snapshot) => {
         const fbData = snapshot.val();
         if (fbData) {
           const resultsList = Object.values(fbData);
           localStorage.setItem('fastsatta_results', JSON.stringify(resultsList));
-          if (typeof renderHomePage === 'function') renderHomePage();
+          this.refreshAllPageViews();
         }
       });
 
-      // Listen for live market settings changes from Firebase Cloud
       this.db.ref('fastsatta/markets').on('value', (snapshot) => {
         const fbMarkets = snapshot.val();
         if (fbMarkets) {
           localStorage.setItem('fastsatta_markets', JSON.stringify(fbMarkets));
-          if (typeof renderHomePage === 'function') renderHomePage();
+          this.refreshAllPageViews();
         }
       });
 
-      // Listen for live social/button settings changes
       this.db.ref('fastsatta/settings').on('value', (snapshot) => {
         const fbSettings = snapshot.val();
         if (fbSettings) {
@@ -211,6 +208,14 @@ class DataEngine {
     }
   }
 
+  refreshAllPageViews() {
+    if (typeof renderHomePage === 'function') renderHomePage();
+    if (typeof renderTodayPage === 'function') renderTodayPage();
+    if (typeof renderRecordChartPage === 'function') renderRecordChartPage();
+    if (typeof renderResultsPage === 'function') renderResultsPage();
+    if (typeof renderMarketDetailPage === 'function') renderMarketDetailPage();
+  }
+
   getMarkets() {
     return JSON.parse(localStorage.getItem('fastsatta_markets') || '[]');
   }
@@ -218,8 +223,11 @@ class DataEngine {
   saveMarkets(markets) {
     localStorage.setItem('fastsatta_markets', JSON.stringify(markets));
     if (this.db) {
-      this.db.ref('fastsatta/markets').set(markets);
+      try {
+        this.db.ref('fastsatta/markets').set(markets);
+      } catch(e) { console.warn(e); }
     }
+    this.refreshAllPageViews();
   }
 
   getSettings() {
@@ -229,7 +237,9 @@ class DataEngine {
   saveSettings(settings) {
     localStorage.setItem('fastsatta_settings', JSON.stringify(settings));
     if (this.db) {
-      this.db.ref('fastsatta/settings').set(settings);
+      try {
+        this.db.ref('fastsatta/settings').set(settings);
+      } catch(e) { console.warn(e); }
     }
   }
 
@@ -239,6 +249,7 @@ class DataEngine {
 
   saveResults(results) {
     localStorage.setItem('fastsatta_results', JSON.stringify(results));
+    this.refreshAllPageViews();
   }
 
   deleteResult(marketId, resultDate) {
@@ -247,13 +258,15 @@ class DataEngine {
     this.saveResults(results);
 
     if (this.db) {
-      this.db.ref('fastsatta/results').orderByChild('marketId').equalTo(marketId).once('value', (snapshot) => {
-        snapshot.forEach((child) => {
-          if (child.val().resultDate === resultDate) {
-            child.ref.remove();
-          }
+      try {
+        this.db.ref('fastsatta/results').orderByChild('marketId').equalTo(marketId).once('value', (snapshot) => {
+          snapshot.forEach((child) => {
+            if (child.val().resultDate === resultDate) {
+              child.ref.remove();
+            }
+          });
         });
-      });
+      } catch(e) { console.warn(e); }
     }
 
     return true;
@@ -270,13 +283,16 @@ class DataEngine {
       this.saveResults(results);
 
       if (this.db) {
-        this.db.ref(`fastsatta/results/${results[idx].id}`).set(results[idx]);
+        try {
+          this.db.ref(`fastsatta/results/${results[idx].id}`).set(results[idx]);
+        } catch(e) { console.warn(e); }
       }
       return true;
     }
     return false;
   }
 
+  // 🚀 Robust Dynamic Results Query with Smart Fallback
   getTodaySummaryDynamic(todayDate = null, yesterdayDate = null) {
     const istDateStr = getISTDateString();
     if (!todayDate) todayDate = istDateStr;
@@ -290,30 +306,41 @@ class DataEngine {
     const markets = this.getMarkets();
     const allResults = this.getResults();
 
-    const todayMap = new Map(allResults.filter(r => r.resultDate === todayDate).map(r => [r.marketId, r]));
-    const yesterdayMap = new Map(allResults.filter(r => r.resultDate === yesterdayDate).map(r => [r.marketId, r]));
-
     const nowMinutes = getISTDateObj().getHours() * 60 + getISTDateObj().getMinutes();
 
     const summaryList = markets.map(m => {
-      const t = todayMap.get(m.id);
-      const y = yesterdayMap.get(m.id);
+      // Find today result
+      let t = allResults.find(r => r.marketId === m.id && r.resultDate === todayDate);
+
+      // Smart Fallback: If no record for today's date yet, pick the most recent published record!
+      if (!t) {
+        const mResults = allResults.filter(r => r.marketId === m.id);
+        if (mResults.length > 0) {
+          t = mResults[0];
+        }
+      }
+
+      // Find yesterday result
+      let y = allResults.find(r => r.marketId === m.id && r.resultDate === yesterdayDate);
+      if (!y && t) {
+        const priorResults = allResults.filter(r => r.marketId === m.id && r.resultDate < t.resultDate);
+        if (priorResults.length > 0) {
+          y = priorResults[0];
+        }
+      }
 
       let badge = 'NONE';
       let priorityScore = 100;
       let isFreshNew = false;
 
       if (t) {
-        if (t.status === 'LIVE') {
+        if (t.status === 'LIVE' || t.status === 'UPDATED') {
           badge = 'LIVE ⚡';
           priorityScore = 10;
           isFreshNew = true;
         } else if (t.status === 'PENDING' || t.isSecret) {
           badge = 'WAITING ⏳';
           priorityScore = 20;
-        } else if (t.status === 'UPDATED') {
-          badge = 'NEW ⚡';
-          priorityScore = 30;
         }
       } else {
         const timeDiff = m.timeMinutes - nowMinutes;
@@ -337,13 +364,13 @@ class DataEngine {
         priorityScore: priorityScore,
         badge: badge,
         isFreshNew: isFreshNew,
-        todayValue: t && t.resultValue ? t.resultValue : 'XX',
-        yesterdayValue: y && y.resultValue ? y.resultValue : (t ? t.yesterdayValue : 'XX'),
+        todayValue: (t && t.resultValue && t.resultValue !== '') ? t.resultValue : 'XX',
+        yesterdayValue: (y && y.resultValue && y.resultValue !== '') ? y.resultValue : (t && t.yesterdayValue ? t.yesterdayValue : 'XX'),
         isSecret: t ? !!t.isSecret : false,
         showInstantly: t ? !!t.showInstantly : true,
         patti: t ? t.patti : null,
-        todayDate: todayDate,
-        yesterdayDate: yesterdayDate,
+        todayDate: t ? t.resultDate : todayDate,
+        yesterdayDate: y ? y.resultDate : yesterdayDate,
         status: t ? t.status : 'PENDING',
       };
     });
@@ -396,6 +423,7 @@ class DataEngine {
     return { year, month, daysInMonth, maxDayToShow, marketSlugs, rows };
   }
 
+  // 🚀 Publish or Update Result
   addOrUpdateResult(data) {
     const results = this.getResults();
     const dateParts = data.resultDate.split('-');
@@ -406,7 +434,7 @@ class DataEngine {
     const idx = results.findIndex(r => r.marketId === data.marketId && r.resultDate === data.resultDate);
 
     const record = {
-      id: idx >= 0 ? results[idx].id : `res-${Date.now()}`,
+      id: idx >= 0 ? results[idx].id : `res-${data.marketId}-${data.resultDate}`,
       marketId: data.marketId,
       marketName: data.marketName,
       slug: data.slug,
@@ -432,9 +460,15 @@ class DataEngine {
 
     this.saveResults(results);
 
-    // Sync to Firebase Database Cloud in real-time
+    // Sync to Firebase Database Cloud with safety fallback
     if (this.db) {
-      this.db.ref(`fastsatta/results/${record.id}`).set(record);
+      try {
+        this.db.ref(`fastsatta/results/${record.id}`).set(record).catch(err => {
+          console.warn("Firebase Cloud Sync Notice (Local Save Successful):", err.message);
+        });
+      } catch(e) {
+        console.warn("Firebase error:", e);
+      }
     }
 
     return record;

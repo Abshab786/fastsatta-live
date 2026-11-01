@@ -1,506 +1,554 @@
-// Fastsatta.live Main UI Script with Dynamic IST Search Engine Optimization
-
-// 🚀 Instant First-Paint Executor: Renders UI at millisecond 0 from memory!
-function initInstantPageRender() {
-  const path = window.location.pathname.toLowerCase();
-
-  if (path.includes('today.html')) {
-    renderTodayPage();
-  } else if (path.includes('record-chart.html')) {
-    renderRecordChartPage();
-  } else if (path.includes('results.html')) {
-    renderResultsPage();
-  } else if (path.includes('history.html')) {
-    renderHistoryPage();
-  } else if (path.includes('result-detail.html')) {
-    renderMarketDetailPage();
-  } else {
-    renderHomePage();
-  }
-}
-
-// Fire INSTANTLY on script load (0ms delay!)
-if (typeof window !== 'undefined') {
-  initInstantPageRender();
-}
+/*
+   FASTSATTA.ONLINE - Dynamic Month Transition & Realtime Sequential Row Generator
+*/
 
 document.addEventListener('DOMContentLoaded', () => {
-  setupMobileMenu();
-  startLiveTimestampClock();
-  updateDynamicSEOMetadata();
-  initInstantPageRender(); // Double-check on DOM ready
 
-  // Auto-refresh dynamic sorting every 10 seconds in background
-  setInterval(() => {
-    const curPath = window.location.pathname.toLowerCase();
-    if (curPath.endsWith('index.html') || curPath === '/' || curPath.endsWith('') || curPath.endsWith('/')) {
-      renderHomePage();
-    } else if (curPath.includes('today.html')) {
-      renderTodayPage();
+    // HARD PURGE stale LocalStorage keys on load
+    try {
+        localStorage.removeItem('fastsatta_live_results');
+    } catch(e) {}
+
+    // Universal Date String Parser
+    function parseDateStringToComponents(dateStr) {
+        if (!dateStr) return null;
+        const clean = dateStr.trim().replace(/\//g, '-');
+        const parts = clean.split('-');
+        if (parts.length !== 3) return null;
+
+        let y, m, d;
+        if (parts[0].length === 4) {
+            y = parts[0];
+            m = parts[1].padStart(2, '0');
+            d = parts[2].padStart(2, '0');
+        } else if (parts[2].length === 4) {
+            d = parts[0].padStart(2, '0');
+            m = parts[1].padStart(2, '0');
+            y = parts[2];
+        } else {
+            return null;
+        }
+
+        return {
+            day: d,
+            month: m,
+            year: y,
+            dashFormatted: `${d}-${m}-${y}`,
+            isoFormatted: `${y}-${m}-${d}`,
+            storageKey: `${y}_${m}_${d}`
+        };
     }
-  }, 10000);
-});
 
-// ⚡ Multi-Tab Instant LocalStorage Sync
-window.addEventListener('storage', (e) => {
-  if (e.key === 'fastsatta_results' || e.key === 'fastsatta_markets' || e.key === 'fastsatta_settings') {
-    initInstantPageRender();
-  }
-});
+    // Helper: Compute Date & Time strictly in Asia/Kolkata (IST - UTC+05:30)
+    function getKolkataDateInfo() {
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
 
-// Helper to format date string "YYYY-MM-DD" -> "DD-MM-YY" (e.g., "2026-10-09" -> "09-10-26")
-function formatDisplayDate(dateStr) {
-  if (!dateStr || dateStr.length < 10) return dateStr;
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    const yearShort = parts[0].slice(2);
-    const month = parts[1];
-    const day = parts[2];
-    return `${day}-${month}-${yearShort}`;
-  }
-  return dateStr;
-}
+        const parts = formatter.formatToParts(now);
+        const dateMap = {};
+        parts.forEach(p => dateMap[p.type] = p.value);
 
-function syncSocialSettings() {
-  if (!window.dataEngine) return;
-  const settings = window.dataEngine.getSettings();
+        const d = dateMap.day;
+        const m = dateMap.month;
+        const y = dateMap.year;
 
-  const waBtns = document.querySelectorAll('.btn-wa-action, a[href*="whatsapp.com"]');
-  const tgBtns = document.querySelectorAll('.btn-tg-action, a[href*="t.me"]');
+        const formattedDash = `${d}-${m}-${y}`; // e.g. "01-11-2026"
+        const isoDash = `${y}-${m}-${d}`;       // e.g. "2026-11-01"
 
-  waBtns.forEach(btn => {
-    if (settings.waLink && settings.waLink.trim() !== '') btn.href = settings.waLink;
-    if (settings.waEnabled === false) {
-      btn.style.display = 'none';
-    } else {
-      btn.style.display = '';
+        const yesterdayDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const yParts = formatter.formatToParts(yesterdayDate);
+        const yMap = {};
+        yParts.forEach(p => yMap[p.type] = p.value);
+        const yesterdayFormattedDash = `${yMap.day}-${yMap.month}-${yMap.year}`;
+        const yesterdayIsoDash = `${yMap.year}-${yMap.month}-${yMap.day}`;
+
+        const monthNameFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', month: 'long' });
+        const monthNameUpper = monthNameFormatter.format(now).toUpperCase();
+
+        const fullFormatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Asia/Kolkata',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        const fullDateStr = fullFormatter.format(now);
+
+        const hours = parseInt(dateMap.hour, 10);
+        const minutes = parseInt(dateMap.minute, 10);
+        const totalMinutes = hours * 60 + minutes;
+
+        return {
+            todayDay: d,
+            todayMonth: m,
+            todayYear: y,
+            monthNameUpper: monthNameUpper,
+            formattedDash: formattedDash,
+            isoDash: isoDash,
+            yesterdayFormattedDash: yesterdayFormattedDash,
+            yesterdayIsoDash: yesterdayIsoDash,
+            fullDateStr: fullDateStr,
+            hours: hours,
+            minutes: minutes,
+            totalMinutes: totalMinutes
+        };
     }
-  });
 
-  tgBtns.forEach(btn => {
-    if (settings.tgLink && settings.tgLink.trim() !== '') btn.href = settings.tgLink;
-    if (settings.tgEnabled === false) {
-      btn.style.display = 'none';
-    } else {
-      btn.style.display = '';
+    // 1. Dynamic SEO Title & Meta Description Sync
+    const dateInfo = getKolkataDateInfo();
+
+    if (document.title.includes('[Current Date]')) {
+        document.title = document.title.replace('[Current Date]', dateInfo.fullDateStr);
     }
-  });
-}
 
-function getFormattedISTDateFull() {
-  const d = getISTDateObj();
-  const day = d.getDate();
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const month = months[d.getMonth()];
-  const year = d.getFullYear();
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && metaDesc.content.includes('[Current Date]')) {
+        metaDesc.content = metaDesc.content.replace(/\[Current Date\]/g, dateInfo.fullDateStr);
+    }
 
-  let suffix = 'th';
-  if (day === 1 || day === 21 || day === 31) suffix = 'st';
-  else if (day === 2 || day === 22) suffix = 'nd';
-  else if (day === 3 || day === 23) suffix = 'rd';
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle && ogTitle.content.includes('[Current Date]')) {
+        ogTitle.content = ogTitle.content.replace('[Current Date]', dateInfo.fullDateStr);
+    }
 
-  return `${day}${suffix} ${month} ${year}`;
-}
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc && ogDesc.content.includes('[Current Date]')) {
+        ogDesc.content = ogDesc.content.replace(/\[Current Date\]/g, dateInfo.fullDateStr);
+    }
 
-function getFormattedISTDateShort(dateObj) {
-  const d = dateObj || getISTDateObj();
-  const day = String(d.getDate()).padStart(2, '0');
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-  const month = months[d.getMonth()];
-  return `${day} ${month}`;
-}
+    // Dynamic Month Header Updater
+    const tableHeaderTitles = document.querySelectorAll('.table-header-title');
+    if (tableHeaderTitles.length >= 2) {
+        tableHeaderTitles[0].textContent = `${dateInfo.monthNameUpper} ${dateInfo.todayYear} - DAY MARKETS RECORD CHART`;
+        tableHeaderTitles[1].textContent = `${dateInfo.monthNameUpper} ${dateInfo.todayYear} - EVENING & NIGHT MARKETS RECORD CHART`;
+    }
 
-// 🎯 Dynamic Asia/Kolkata IST SEO Title & Meta Description Auto-Updater
-function updateDynamicSEOMetadata() {
-  const istFullDate = getFormattedISTDateFull(); // e.g. "10th October 2026"
-  const path = window.location.pathname.toLowerCase();
+    // 2. Mobile Navigation Toggle
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const navLinks = document.getElementById('navLinks');
 
-  // Exact Google Search Preview Target:
-  // Title: Satta King Live Result Today – [Current Date] | FastSatta
-  // Description: Check Satta King Live Results for [Current Date]. Get today's latest market results, daily updates and historical charts for Disawar, Haryana King, Delhi Bazar, Ram Bazar and more on FastSatta.live.
-  let pageTitle = `Satta King Live Result Today – ${istFullDate} | FastSatta`;
-  let metaDescription = `Check Satta King Live Results for ${istFullDate}. Get today's latest market results, daily updates and historical charts for Disawar, Haryana King, Delhi Bazar, Ram Bazar and more on FastSatta.live.`;
+    if (menuBtn && navLinks) {
+        menuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
+        });
+    }
 
-  if (path.includes('today.html')) {
-    pageTitle = `Today Satta King Live Result – ${istFullDate} | FastSatta`;
-    metaDescription = `Check Satta King Live Results for ${istFullDate}. Get today's latest market results, daily updates and historical charts for Disawar, Haryana King, Delhi Bazar, Ram Bazar and more on FastSatta.live.`;
-  } else if (path.includes('results.html') || path.includes('history.html')) {
-    pageTitle = `All Satta King Results Archive – ${getISTDateObj().getFullYear()} | FastSatta`;
-    metaDescription = `Search complete archive of Satta King live results. Check historical record charts for Disawar, Faridabad, Gaziyabad, Gali, Shree Ganesh on FastSatta.live.`;
-  } else if (path.includes('record-chart.html')) {
-    pageTitle = `Satta King Record Chart ${getISTDateObj().getFullYear()} — Monthly & Yearly | FastSatta`;
-    metaDescription = `View complete monthly and yearly Satta King record chart matrix for Disawar, Faridabad, Gaziyabad, Gali, Shree Ganesh, Delhi Bazar on FastSatta.live.`;
-  }
+    // 3. Real-time Clock Update
+    function updateLiveClock() {
+        const timeDisplay = document.getElementById('liveTimeDisplay');
+        const footerTime = document.getElementById('footerTimeDisplay');
 
-  // Synchronize <title>
-  document.title = pageTitle;
+        const now = new Date();
+        const options = {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true,
+            timeZone: 'Asia/Kolkata'
+        };
 
-  // Synchronize <meta name="description">
-  const metaDescTag = document.querySelector('meta[name="description"]');
-  if (metaDescTag) metaDescTag.setAttribute('content', metaDescription);
+        const formattedDate = now.toLocaleString('en-GB', options);
 
-  // Synchronize OpenGraph title & description
-  const ogTitleTag = document.querySelector('meta[property="og:title"]');
-  if (ogTitleTag) ogTitleTag.setAttribute('content', pageTitle);
+        if (timeDisplay) {
+            timeDisplay.textContent = formattedDate;
+        }
+        if (footerTime) {
+            footerTime.textContent = formattedDate;
+        }
 
-  const ogDescTag = document.querySelector('meta[property="og:description"]');
-  if (ogDescTag) ogDescTag.setAttribute('content', metaDescription);
-}
+        checkTimeBasedResults();
+        applyChartCustomOverrides();
+    }
 
-function setupMobileMenu() {
-  const btn = document.getElementById('mobile-menu-btn');
-  const menu = document.getElementById('mobile-menu');
-  if (btn && menu) {
-    btn.addEventListener('click', () => menu.classList.toggle('hidden'));
-  }
-}
+    // 4. Markets Master Config (Exact Column Index Alignment)
+    // Table 0 (Day Markets): 1: HK, 2: RB, 3: DB, 4: DN, 5: SG, 6: FB
+    // Table 1 (Night Markets): 1: AK, 2: GZ, 3: HN, 4: GL, 5: DS
+    const defaultMarketsData = [
+        { id: "DS", name: "DISAWAR", timeStr: "05:00 AM", hour: 5, minute: 0, oldNum: "27", tableIdx: 1, colIdx: 5 },
+        { id: "HK", name: "HARYANA KING", timeStr: "01:30 PM", hour: 13, minute: 30, oldNum: "19", tableIdx: 0, colIdx: 1 },
+        { id: "RB", name: "RAM BAZAR", timeStr: "02:30 PM", hour: 14, minute: 30, oldNum: "73", tableIdx: 0, colIdx: 2 },
+        { id: "DB", name: "DELHI BAZAR", timeStr: "03:10 PM", hour: 15, minute: 10, oldNum: "50", tableIdx: 0, colIdx: 3 },
+        { id: "DN", name: "DELHI NAGAR", timeStr: "04:10 PM", hour: 16, minute: 10, oldNum: "27", tableIdx: 0, colIdx: 4 },
+        { id: "SG", name: "SHREE GANESH", timeStr: "04:40 PM", hour: 16, minute: 40, oldNum: "58", tableIdx: 0, colIdx: 5 },
+        { id: "FB", name: "FARIDABAD", timeStr: "06:10 PM", hour: 18, minute: 10, oldNum: "96", tableIdx: 0, colIdx: 6 },
+        { id: "AK", name: "AMBALA KING", timeStr: "07:30 PM", hour: 19, minute: 30, oldNum: "21", tableIdx: 1, colIdx: 1 },
+        { id: "GZ", name: "GAZIYABAD", timeStr: "10:00 PM", hour: 22, minute: 0, oldNum: "46", tableIdx: 1, colIdx: 2 },
+        { id: "HN", name: "HIMACHAL NIGHT", timeStr: "10:40 PM", hour: 22, minute: 40, oldNum: "19", tableIdx: 1, colIdx: 3 },
+        { id: "GL", name: "GALI", timeStr: "12:00 AM", hour: 0, minute: 0, oldNum: "40", tableIdx: 1, colIdx: 4 }
+    ];
 
-// ⏰ Real-Time IST Ticking Clock
-function startLiveTimestampClock() {
-  const timeElements = document.querySelectorAll('.live-updated-timestamp, #live-updated-timestamp');
-  if (timeElements.length === 0) return;
+    function getStoredResults() {
+        try {
+            const saved = localStorage.getItem('fastsatta_live_results');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('LocalStorage read error:', e);
+        }
+        return {};
+    }
 
-  function updateClock() {
-    const d = getISTDateObj();
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    async function syncFirebaseResults() {
+        const firebaseUrl = "https://fastsatta-online-default-rtdb.asia-southeast1.firebasedatabase.app/results.json";
+        try {
+            const response = await fetch(firebaseUrl);
+            if (response.ok) {
+                const fbData = await response.json();
+                if (fbData) {
+                    localStorage.setItem('fastsatta_live_results', JSON.stringify(fbData));
+                    checkTimeBasedResults();
+                }
+            }
+        } catch (e) {}
 
-    const month = months[d.getMonth()];
-    const day = String(d.getDate()).padStart(2, '0');
-    const year = d.getFullYear();
+        const chartFirebaseUrl = "https://fastsatta-online-default-rtdb.asia-southeast1.firebasedatabase.app/chart_overrides.json";
+        try {
+            const response2 = await fetch(chartFirebaseUrl);
+            if (response2.ok) {
+                const chartData = await response2.json();
+                if (chartData) {
+                    let mapData = {};
+                    for (const k in chartData) {
+                        if (chartData[k] && chartData[k].num) {
+                            mapData[k] = chartData[k].num;
+                        }
+                    }
+                    localStorage.setItem('fastsatta_chart_overrides', JSON.stringify(mapData));
+                    applyChartCustomOverrides();
+                }
+            }
+        } catch (e) {}
+    }
 
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
+    function checkTimeBasedResults() {
+        const info = getKolkataDateInfo();
+        const currentMins = info.totalMinutes;
 
-    const formattedTime = `Updated: ${month} ${day}, ${year}, ${hours}:${minutes}:${seconds} IST`;
+        const storedResults = getStoredResults();
+        const resultCards = document.querySelectorAll('.live-cards-container .card-result-row');
+        let activeMarketList = [];
 
-    timeElements.forEach(el => {
-      el.innerText = formattedTime;
+        resultCards.forEach((card, index) => {
+            const newSpan = card.querySelector('.new-val');
+            const oldSpan = card.querySelector('.old-val');
+            const market = defaultMarketsData[index];
+
+            if (newSpan && market) {
+                const targetMins = market.hour * 60 + market.minute;
+                const waitStartMins = targetMins === 0 ? 1380 : targetMins - 60; // 11:00 PM for Gali
+
+                let yesterdayNumToShow = market.oldNum;
+                let isTodayDeclared = false;
+                let todayNumValue = "--";
+
+                const adminData = storedResults[market.name];
+
+                if (adminData) {
+                    const pubDate = adminData.date || "";
+
+                    if (pubDate === info.formattedDash || pubDate === info.isoDash) {
+                        if (adminData.oldNum && adminData.oldNum !== "--") {
+                            yesterdayNumToShow = adminData.oldNum;
+                        }
+                        if (adminData.newNum && adminData.newNum !== "--" && adminData.newNum.trim() !== "" && adminData.status !== "RESET") {
+                            isTodayDeclared = true;
+                            todayNumValue = adminData.newNum;
+                        }
+                    } else if (pubDate === info.yesterdayFormattedDash || pubDate === info.yesterdayIsoDash) {
+                        if (adminData.newNum && adminData.newNum !== "--" && adminData.status !== "RESET") {
+                            yesterdayNumToShow = adminData.newNum;
+                            updateSpecificDateTableCell(market.tableIdx, market.colIdx, info.yesterdayFormattedDash, adminData.newNum);
+                        }
+                    }
+                }
+
+                if (oldSpan) {
+                    oldSpan.textContent = `{ ${yesterdayNumToShow} }`;
+                }
+
+                let state = "PENDING";
+                let displayVal = "";
+
+                const isGaliWaitingWindow = (targetMins === 0 && currentMins >= 1380);
+                const isOtherWaitingWindow = (targetMins > 0 && currentMins >= waitStartMins && currentMins < targetMins);
+
+                if (isTodayDeclared) {
+                    state = "DECLARED";
+                    displayVal = todayNumValue;
+                    newSpan.textContent = `[ ${todayNumValue} ]`;
+                    newSpan.classList.remove('blink-wait');
+                    newSpan.style.color = "#16A34A";
+                    newSpan.style.fontWeight = "900";
+
+                    updateTodayTableCell(market.tableIdx, market.colIdx, todayNumValue);
+                } else if (isGaliWaitingWindow || isOtherWaitingWindow) {
+                    state = "WAITING";
+                    displayVal = "Wait...";
+                    newSpan.textContent = "Wait...";
+                    newSpan.classList.add('blink-wait');
+                    newSpan.style.color = "#FF0000";
+
+                    updateTodayTableCell(market.tableIdx, market.colIdx, "Wait...");
+                } else {
+                    state = "PENDING";
+                    displayVal = "--";
+                    newSpan.textContent = "[ -- ]";
+                    newSpan.classList.remove('blink-wait');
+                    newSpan.style.color = "#000000";
+
+                    updateTodayTableCell(market.tableIdx, market.colIdx, "--");
+                }
+
+                activeMarketList.push({
+                    name: market.name,
+                    timeStr: market.timeStr,
+                    state: state,
+                    num: displayVal,
+                    lastDeclaredNum: yesterdayNumToShow,
+                    oldNum: market.oldNum,
+                    targetMins: targetMins
+                });
+            }
+        });
+
+        updateDynamicSpotHighlights(activeMarketList, currentMins);
+    }
+
+    // Update today-row (All digits in table strictly BLACK color)
+    function updateTodayTableCell(tableIdx, colIndex, value) {
+        const historyTables = document.querySelectorAll('.history-table');
+        if (historyTables && historyTables[tableIdx]) {
+            const todayRow = historyTables[tableIdx].querySelector('tbody tr.today-row');
+            if (todayRow && todayRow.cells[colIndex]) {
+                todayRow.cells[colIndex].textContent = value;
+                todayRow.cells[colIndex].style.color = "#000000";
+                todayRow.cells[colIndex].style.fontWeight = "bold";
+            }
+        }
+    }
+
+    // Update specific date row in table (All digits in table strictly BLACK color)
+    function updateSpecificDateTableCell(tableIdx, colIndex, dateStr, value) {
+        const dateComp = parseDateStringToComponents(dateStr);
+        const dayPart = dateComp ? dateComp.day : dateStr;
+
+        const historyTables = document.querySelectorAll('.history-table');
+        if (historyTables && historyTables[tableIdx]) {
+            const rows = historyTables[tableIdx].querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const dateCell = row.cells[0];
+                if (dateCell && dateCell.textContent.startsWith(dayPart)) {
+                    if (row.cells[colIndex]) {
+                        row.cells[colIndex].textContent = value;
+                        row.cells[colIndex].style.color = "#000000";
+                        row.cells[colIndex].style.fontWeight = "bold";
+                    }
+                }
+            });
+        }
+    }
+
+    // Apply Admin Custom Chart Record Overrides (Strictly Black Color Digits)
+    function applyChartCustomOverrides() {
+        try {
+            const savedOverrides = localStorage.getItem('fastsatta_chart_overrides');
+            if (savedOverrides) {
+                const overrides = JSON.parse(savedOverrides);
+                for (const key in overrides) {
+                    const parts = key.split('_');
+                    let dayPart = "";
+                    let marketName = "";
+
+                    if (parts.length === 4) {
+                        dayPart = parts[2];
+                        marketName = parts[3];
+                    } else if (parts.length === 2) {
+                        dayPart = parts[0];
+                        marketName = parts[1];
+                    }
+
+                    const customNum = overrides[key];
+                    const foundMarket = defaultMarketsData.find(m => m.name === marketName);
+                    if (foundMarket && dayPart) {
+                        updateSpecificDateTableCell(foundMarket.tableIdx, foundMarket.colIdx, dayPart, customNum);
+                    }
+                }
+            }
+        } catch(e) {}
+    }
+
+    // Dynamic Sequential Spotlight Engine
+    function updateDynamicSpotHighlights(marketList, currentTotalMins) {
+        const spotContainer = document.querySelector('.spot-results-container');
+        if (!spotContainer) return;
+
+        let spotPin = null;
+        try {
+            const savedPin = localStorage.getItem('fastsatta_spotlight_pin');
+            if (savedPin) {
+                const parsedPin = JSON.parse(savedPin);
+                if (parsedPin.active) {
+                    if (parsedPin.expireTime > 0 && Date.now() > parsedPin.expireTime) {
+                        localStorage.removeItem('fastsatta_spotlight_pin');
+                    } else {
+                        spotPin = parsedPin;
+                    }
+                }
+            }
+        } catch(e) {}
+
+        let sortedByProximity = [...marketList].sort((a, b) => {
+            if (a.state === "WAITING" && b.state !== "WAITING") return -1;
+            if (b.state === "WAITING" && a.state !== "WAITING") return 1;
+
+            if (a.state === "DECLARED" && b.state === "PENDING") return -1;
+            if (b.state === "DECLARED" && a.state === "PENDING") return 1;
+
+            let diffA = Math.abs(a.targetMins - currentTotalMins);
+            let diffB = Math.abs(b.targetMins - currentTotalMins);
+
+            if (a.targetMins === 0 && currentTotalMins < 300) diffA = currentTotalMins;
+            if (b.targetMins === 0 && currentTotalMins < 300) diffB = currentTotalMins;
+
+            return diffA - diffB;
+        });
+
+        let m1 = sortedByProximity[0];
+        let m2 = sortedByProximity[1];
+
+        if (spotPin) {
+            if (spotPin.m1 && spotPin.m1 !== "AUTO") {
+                const found1 = marketList.find(m => m.name === spotPin.m1);
+                if (found1) {
+                    m1 = { ...found1 };
+                    if (spotPin.s1 === "WAITING") m1.state = "WAITING";
+                    else if (spotPin.s1 === "DECLARED") m1.state = "DECLARED";
+                    else if (spotPin.s1 === "PENDING") m1.state = "PENDING";
+                }
+            }
+
+            if (spotPin.m2 && spotPin.m2 !== "AUTO") {
+                const found2 = marketList.find(m => m.name === spotPin.m2);
+                if (found2) {
+                    m2 = { ...found2 };
+                    if (spotPin.s2 === "WAITING") m2.state = "WAITING";
+                    else if (spotPin.s2 === "DECLARED") m2.state = "DECLARED";
+                    else if (spotPin.s2 === "PENDING") m2.state = "PENDING";
+                }
+            }
+        }
+
+        if (m1 && m2) {
+            let val1Num = m1.num;
+            if (val1Num === "--" || val1Num === "Wait...") {
+                val1Num = (m1.lastDeclaredNum && m1.lastDeclaredNum !== "--") ? m1.lastDeclaredNum : m1.oldNum;
+            }
+
+            let val2Num = m2.num;
+            if (val2Num === "--" || val2Num === "Wait...") {
+                val2Num = (m2.lastDeclaredNum && m2.lastDeclaredNum !== "--") ? m2.lastDeclaredNum : m2.oldNum;
+            }
+
+            const val1Display = m1.state === "DECLARED" ? `[ ${val1Num} ]` : (m1.state === "WAITING" ? "Wait..." : "--");
+            const val1Class = m1.state === "WAITING" ? "blink-wait" : (m1.state === "DECLARED" ? "green-result-number" : "green-result-number");
+            const val1Style = m1.state === "PENDING" ? 'style="color: #000000; font-weight: bold;"' : '';
+
+            const val2Display = m2.state === "DECLARED" ? `[ ${val2Num} ]` : (m2.state === "WAITING" ? "Wait..." : "--");
+            const val2Class = m2.state === "WAITING" ? "blink-wait" : (m2.state === "DECLARED" ? "green-result-number" : "green-result-number");
+            const val2Style = m2.state === "PENDING" ? 'style="color: #000000; font-weight: bold;"' : '';
+
+            spotContainer.innerHTML = `
+                <div class="pink-market-name">${m1.name}</div>
+                <div class="${val1Class}" ${val1Style}>${val1Display}</div>
+
+                <div class="pink-market-name">${m2.name}</div>
+                <div class="${val2Class}" ${val2Style}>${val2Display}</div>
+            `;
+        }
+    }
+
+    // Ensure ALL days of the month up to today exist in perfect chronological order!
+    function ensureTodayRowExists() {
+        const info = getKolkataDateInfo();
+        const targetDayInt = parseInt(info.todayDay, 10);
+
+        const tables = document.querySelectorAll('.history-table tbody');
+        tables.forEach((tbody, tIdx) => {
+            const rows = tbody.querySelectorAll('tr');
+            let existingDays = [];
+
+            rows.forEach(row => {
+                const dateCell = row.cells[0];
+                if (dateCell) {
+                    const dayNum = parseInt(dateCell.textContent.split('-')[0], 10);
+                    const monthNum = dateCell.textContent.split('-')[1];
+                    if (!isNaN(dayNum) && monthNum === info.todayMonth) {
+                        existingDays.push(dayNum);
+                    }
+                }
+            });
+
+            const maxDay = existingDays.length > 0 ? Math.max(...existingDays) : 0;
+            const colCount = tIdx === 0 ? 6 : 5; // Table 0: 6 markets, Table 1: 5 markets
+
+            for (let d = maxDay + 1; d <= targetDayInt; d++) {
+                const dStr = String(d).padStart(2, '0');
+                const newTr = document.createElement('tr');
+                if (d === targetDayInt) {
+                    newTr.classList.add('today-row');
+                }
+
+                let tdHTML = `<td class="date-cell">${dStr}-${info.todayMonth}-${info.todayYear}</td>`;
+                for (let i = 0; i < colCount; i++) {
+                    tdHTML += `<td>--</td>`;
+                }
+                newTr.innerHTML = tdHTML;
+                tbody.appendChild(newTr);
+            }
+
+            const updatedRows = tbody.querySelectorAll('tr');
+            updatedRows.forEach(row => {
+                const dateCell = row.cells[0];
+                if (dateCell && dateCell.textContent.startsWith(info.todayDay)) {
+                    row.classList.add('today-row');
+                } else {
+                    row.classList.remove('today-row');
+                }
+            });
+        });
+    }
+
+    ensureTodayRowExists();
+    applyChartCustomOverrides();
+
+    syncFirebaseResults();
+    setInterval(syncFirebaseResults, 3000);
+
+    setInterval(updateLiveClock, 1000);
+    updateLiveClock();
+
+    const refreshBtns = document.querySelectorAll('#refreshBtn');
+    refreshBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
+            setTimeout(() => {
+                syncFirebaseResults();
+                checkTimeBasedResults();
+                applyChartCustomOverrides();
+                window.location.reload();
+            }, 300);
+        });
     });
-  }
-
-  updateClock();
-  setInterval(updateClock, 1000);
-}
-
-// Helper to format Mix Chart cell values
-function formatMixChartCell(val, colorClass) {
-  if (val === '---') {
-    return `<span class="text-xs text-red-600 font-bold">---</span>`;
-  }
-  if (!val || val === 'XX') {
-    return `<span class="text-slate-300 font-mono font-medium text-xs sm:text-sm">XX</span>`;
-  }
-  return `<span class="font-mono font-black ${colorClass} text-base sm:text-lg">${val}</span>`;
-}
-
-// Page 1: Homepage Renderer (0ms Instant Render)
-function renderHomePage() {
-  const cardsContainer = document.getElementById('today-cards-container');
-  const summaryTableBody = document.getElementById('summary-table-body');
-  const monthlyMatrixContainer = document.getElementById('monthly-matrix-body');
-  const monthlyMatrixContainer2 = document.getElementById('monthly-matrix-body-2');
-
-  if (!window.dataEngine) return;
-
-  const todayDateObj = getISTDateObj();
-  const todayDateStr = getISTDateString();
-  const curYear = todayDateObj.getFullYear();
-  const curMonth = todayDateObj.getMonth() + 1;
-
-  const yDateObj = getISTDateObj();
-  yDateObj.setDate(yDateObj.getDate() - 1);
-  const yesterdayDateStr = `${yDateObj.getFullYear()}-${String(yDateObj.getMonth() + 1).padStart(2, '0')}-${String(yDateObj.getDate()).padStart(2, '0')}`;
-
-  const todaySummary = window.dataEngine.getTodaySummaryDynamic(todayDateStr, yesterdayDateStr);
-
-  const todayFormatted = getFormattedISTDateShort(todayDateObj);
-  const yesterdayFormatted = getFormattedISTDateShort(yDateObj);
-
-  // 0. Update Chart Banner Headings Dynamically
-  const monthNamesUpper = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-  const currentMonthYearStr = `${monthNamesUpper[todayDateObj.getMonth()]} ${todayDateObj.getFullYear()}`;
-
-  const mixBanners = document.querySelectorAll('.mix-chart-header-banner');
-  if (mixBanners.length >= 2) {
-    mixBanners[0].innerText = `${currentMonthYearStr} SATTA KING MIX RECORD CHART (DISAWAR • HARYANA KING • RAM BAZAR • DELHI BAZAR • SHREE GANESH)`;
-    mixBanners[1].innerText = `${currentMonthYearStr} SATTA KING MIX RECORD CHART (FARIDABAD • AMBALA KING • GAZIYABAD • HIMACHAL NIGHT • GALI)`;
-  }
-
-  // 1. Render Result Cards Dashboard
-  if (cardsContainer) {
-    cardsContainer.innerHTML = todaySummary.map(item => {
-      const isPending = item.todayValue === 'XX' || item.status === 'PENDING';
-
-      let badgeHTML = '';
-      if (item.badge === 'NEXT ⏳' || item.isNextUpcoming) {
-        badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEXT ⏳</span>`;
-      } else if (item.badge === 'NEW ⚡' || item.isFreshNew) {
-        badgeHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white animate-pulse whitespace-nowrap shrink-0 shadow-sm">NEW ⚡</span>`;
-      }
-
-      return `
-        <div class="satta-card transition-all duration-300">
-          <div class="satta-card-header flex justify-between items-center px-3 sm:px-4 py-2 gap-2">
-            <div class="flex items-center space-x-1.5 sm:space-x-2 min-w-0 shrink">
-              <span class="uppercase tracking-wide font-black text-xs sm:text-base whitespace-nowrap">${item.marketName}</span>
-              ${badgeHTML}
-            </div>
-            <span class="text-[10px] sm:text-xs text-yellow-300 font-bold whitespace-nowrap shrink-0">( ${item.resultTime} )</span>
-          </div>
-
-          <div class="satta-card-body p-3.5 flex items-center justify-around w-full">
-            <div class="text-center">
-              <span class="text-[10px] sm:text-[11px] font-black uppercase text-slate-700 block">YESTERDAY <span class="text-slate-500 font-bold">(${yesterdayFormatted})</span></span>
-              <span class="result-val-yesterday block mt-0.5">${item.yesterdayValue}</span>
-            </div>
-
-            <div class="text-center border-l-2 border-slate-300 pl-4 sm:pl-6">
-              <span class="text-[10px] sm:text-[11px] font-black uppercase text-emerald-800 block">TODAY <span class="text-emerald-700 font-extrabold">(${todayFormatted})</span></span>
-              <span class="${isPending ? 'text-slate-400 font-mono text-3xl font-black block mt-0.5' : 'result-val-today block mt-0.5'}">${item.todayValue}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // 2. Render Summary Table
-  if (summaryTableBody) {
-    summaryTableBody.innerHTML = todaySummary.map(item => {
-      const isPending = item.todayValue === 'XX' || item.status === 'PENDING';
-
-      return `
-        <tr class="transition-all duration-300">
-          <td class="text-left font-black text-red-800 text-[10px] sm:text-base uppercase whitespace-nowrap overflow-hidden px-1 sm:px-4 py-2.5 sm:py-3">
-            <a href="result-detail.html?slug=${item.slug}" class="hover:underline truncate block">${item.marketName}</a>
-          </td>
-          <td class="text-center font-mono font-bold text-xs sm:text-xl text-slate-900 px-0.5 sm:px-3 py-2.5 sm:py-3 whitespace-nowrap">
-            ${item.yesterdayValue}
-          </td>
-          <td class="text-center font-mono font-black text-xs sm:text-2xl px-0.5 sm:px-3 py-2.5 sm:py-3 whitespace-nowrap">
-            <div class="${isPending ? 'text-slate-400 font-bold' : 'text-emerald-700 font-black'}">${item.todayValue}</div>
-          </td>
-          <td class="text-center text-slate-800 text-xs font-black hidden sm:table-cell px-2 sm:px-4 py-3 whitespace-nowrap">${item.resultTime}</td>
-          <td class="text-right hidden sm:table-cell px-2 sm:px-4 py-3 whitespace-nowrap">
-            <a href="record-chart.html?slug=${item.slug}" class="chart-button-yellow text-xs inline-block px-3 py-1">
-              CHART
-            </a>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  // 3. Render Monthly Matrix Chart 1
-  if (monthlyMatrixContainer) {
-    const matrix1 = window.dataEngine.getMonthlyMatrix(curYear, curMonth, ['disawar', 'haryana-king', 'ram-bazar', 'delhi-bazar', 'shree-ganesh']);
-    monthlyMatrixContainer.innerHTML = matrix1.rows.map(r => `
-      <tr>
-        <td class="font-black text-xs text-red-800 bg-amber-100 text-center">${r.day < 10 ? '0' + r.day : r.day}</td>
-        <td class="text-center">${formatMixChartCell(r.values['disawar'], 'text-slate-900')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['haryana-king'], 'text-orange-700')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['ram-bazar'], 'text-emerald-800')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['delhi-bazar'], 'text-red-700')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['shree-ganesh'], 'text-purple-800')}</td>
-      </tr>
-    `).join('');
-  }
-
-  // 4. Render Monthly Matrix Chart 2
-  if (monthlyMatrixContainer2) {
-    const matrix2 = window.dataEngine.getMonthlyMatrix(curYear, curMonth, ['faridabad', 'ambala-king', 'gaziyabad', 'himachal-night', 'gali']);
-    monthlyMatrixContainer2.innerHTML = matrix2.rows.map(r => `
-      <tr>
-        <td class="font-black text-xs text-red-800 bg-amber-100 text-center">${r.day < 10 ? '0' + r.day : r.day}</td>
-        <td class="text-center">${formatMixChartCell(r.values['faridabad'], 'text-purple-800')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['ambala-king'], 'text-amber-800')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['gaziyabad'], 'text-blue-800')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['himachal-night'], 'text-red-800')}</td>
-        <td class="text-center">${formatMixChartCell(r.values['gali'], 'text-emerald-700')}</td>
-      </tr>
-    `).join('');
-  }
-
-  syncSocialSettings();
-}
-
-// Page 2: Today Results Page
-function renderTodayPage() {
-  renderHomePage();
-}
-
-// Page 3: Record Chart Page (0ms Instant First-Paint Render)
-function renderRecordChartPage() {
-  const params = new URLSearchParams(window.location.search);
-  let slug = params.get('slug') || 'disawar';
-  const month = parseInt(params.get('month') || String(getISTDateObj().getMonth() + 1));
-  const year = parseInt(params.get('year') || String(getISTDateObj().getFullYear()));
-
-  const select = document.getElementById('chart-market-select');
-  const tableBody = document.getElementById('chart-table-body');
-  const title = document.getElementById('chart-title');
-
-  function updateChartView(selectedSlug) {
-    slug = selectedSlug;
-
-    if (title) {
-      let activeName = slug.replace('-', ' ').toUpperCase();
-      if (window.dataEngine) {
-        const active = window.dataEngine.getMarkets().find(m => m.slug.toLowerCase() === slug.toLowerCase());
-        if (active) activeName = active.name;
-      }
-      title.innerText = `${activeName} RECORD CHART ${year}`;
-    }
-
-    if (tableBody && window.dataEngine) {
-      const results = window.dataEngine.getResults()
-        .filter(r => (r.slug && r.slug.toLowerCase() === slug.toLowerCase()) || (r.marketName && r.marketName.toLowerCase().includes(slug.replace('-', ' ').toLowerCase())))
-        .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
-
-      if (results.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="text-center font-bold text-slate-500 py-6">No record chart data available for this market.</td></tr>`;
-      } else {
-        tableBody.innerHTML = results.map(r => `
-          <tr>
-            <td class="font-bold text-[11px] sm:text-xs text-red-800 text-left px-2 py-2 whitespace-nowrap">${formatDisplayDate(r.resultDate)}</td>
-            <td class="text-[11px] sm:text-xs text-slate-800 text-center px-1 py-2 whitespace-nowrap">${r.day < 10 ? '0' + r.day : r.day}</td>
-            <td class="text-center font-mono font-black text-xl sm:text-2xl ${r.resultValue === 'XX' ? 'text-slate-300 font-medium' : 'text-emerald-700'} px-1 py-2 whitespace-nowrap">${r.resultValue}</td>
-            <td class="text-right text-[10px] sm:text-xs px-2 py-2 whitespace-nowrap"><span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">${r.status || 'UPDATED'}</span></td>
-          </tr>
-        `).join('');
-      }
-    }
-  }
-
-  if (select && window.dataEngine) {
-    const markets = window.dataEngine.getMarkets();
-    select.innerHTML = markets.map(m => `
-      <option value="${m.slug}" ${m.slug.toLowerCase() === slug.toLowerCase() ? 'selected' : ''}>${m.name} (${m.resultTime})</option>
-    `).join('');
-
-    select.onchange = (e) => {
-      updateChartView(e.target.value);
-      try {
-        history.pushState(null, '', `record-chart.html?slug=${e.target.value}&month=${month}&year=${year}`);
-      } catch(e) {}
-    };
-  }
-
-  updateChartView(slug);
-  syncSocialSettings();
-}
-
-// Page 4: All Results Search Page (0ms Instant First-Paint Render)
-function renderResultsPage() {
-  const container = document.getElementById('results-list-table-body');
-  const input = document.getElementById('results-search-input');
-
-  const render = (query = '') => {
-    let results = window.dataEngine.getResults()
-      .filter(r => r.resultValue && r.resultValue !== 'XX')
-      .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
-
-    if (query) {
-      const qLower = query.toLowerCase().trim();
-      results = results.filter(r => {
-        const mName = (r.marketName || '').toLowerCase();
-        const slug = (r.slug || '').toLowerCase();
-        const val = (r.resultValue || '').toLowerCase();
-        const dateIso = (r.resultDate || '').toLowerCase();
-        const dateFmt = formatDisplayDate(r.resultDate || '').toLowerCase();
-
-        return mName.includes(qLower) ||
-               slug.includes(qLower) ||
-               val.includes(qLower) ||
-               dateIso.includes(qLower) ||
-               dateFmt.includes(qLower);
-      });
-    }
-
-    if (container) {
-      if (results.length === 0) {
-        container.innerHTML = `<tr><td colspan="6" class="text-center font-bold text-slate-500 py-6">No matching result records found.</td></tr>`;
-      } else {
-        container.innerHTML = results.slice(0, 100).map(r => `
-          <tr>
-            <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base px-2 py-2.5">
-              <a href="result-detail.html?slug=${r.slug}">${r.marketName}</a>
-            </td>
-            <td class="text-center font-mono font-black text-lg sm:text-2xl text-emerald-700 px-1 py-2.5">${r.resultValue}</td>
-            <td class="text-center text-slate-800 text-[11px] sm:text-xs font-bold px-1 py-2.5">${formatDisplayDate(r.resultDate)}</td>
-            <td class="text-center text-slate-800 text-xs font-bold hidden sm:table-cell px-2 py-2.5">${r.resultTime}</td>
-            <td class="text-center hidden sm:table-cell px-1 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
-            <td class="text-right px-2 py-2.5"><a href="record-chart.html?slug=${r.slug}" class="chart-button-yellow text-[10px] sm:text-xs inline-block px-2 py-1">Chart &rarr;</a></td>
-          </tr>
-        `).join('');
-      }
-    }
-  };
-
-  if (input) {
-    input.oninput = (e) => render(e.target.value);
-    input.onkeyup = (e) => render(e.target.value);
-  }
-  render();
-  syncSocialSettings();
-}
-
-// Page 5: History Page
-function renderHistoryPage() {
-  renderResultsPage();
-}
-
-// Page 6: Market Specific Detail Page (0ms Instant First-Paint Render)
-function renderMarketDetailPage() {
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get('slug') || 'disawar';
-
-  const title = document.getElementById('detail-market-title');
-  const time = document.getElementById('detail-market-time');
-  const val = document.getElementById('detail-market-value');
-
-  let market = null;
-  if (window.dataEngine) {
-    market = window.dataEngine.getMarkets().find(m => m.slug.toLowerCase() === slug.toLowerCase());
-  }
-
-  const marketName = market ? market.name : slug.replace('-', ' ').toUpperCase();
-  const marketTime = market ? market.resultTime : '12:00 PM';
-
-  if (title) title.innerText = marketName;
-  if (time) time.innerText = `Daily Result Time: ${marketTime}`;
-
-  if (window.dataEngine) {
-    const todayRes = window.dataEngine.getResults().find(r => r.slug.toLowerCase() === slug.toLowerCase() && r.resultDate === getISTDateString());
-    if (val) val.innerText = todayRes ? todayRes.resultValue : 'XX';
-
-    const historyTable = document.getElementById('detail-history-table');
-    if (historyTable) {
-      const history = window.dataEngine.getResults()
-        .filter(r => r.slug.toLowerCase() === slug.toLowerCase() && r.resultValue && r.resultValue !== 'XX')
-        .sort((a, b) => b.resultDate.localeCompare(a.resultDate));
-
-      if (history.length === 0) {
-        historyTable.innerHTML = `<tr><td colspan="6" class="text-center font-bold text-slate-500 py-6">No historical records found for this market.</td></tr>`;
-      } else {
-        historyTable.innerHTML = history.map(r => `
-          <tr>
-            <td class="text-left font-black text-red-800 uppercase text-xs sm:text-base px-2 py-2.5">${r.marketName}</td>
-            <td class="text-center font-mono font-black text-lg sm:text-2xl text-emerald-700 px-1 py-2.5">${r.resultValue}</td>
-            <td class="text-center text-slate-800 text-[11px] sm:text-xs font-bold px-1 py-2.5">${formatDisplayDate(r.resultDate)}</td>
-            <td class="text-center text-slate-800 text-xs font-bold hidden sm:table-cell px-2 py-2.5">${r.resultTime}</td>
-            <td class="text-center hidden sm:table-cell px-1 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">${r.status || 'UPDATED'}</span></td>
-            <td class="text-right px-2 py-2.5"><a href="record-chart.html?slug=${r.slug}" class="chart-button-yellow text-[10px] sm:text-xs inline-block px-2 py-1">Chart &rarr;</a></td>
-          </tr>
-        `).join('');
-      }
-    }
-  }
-
-  syncSocialSettings();
-}
-
-function renderAdminPage() {
-  // Managed in admin.html
-}
+});
